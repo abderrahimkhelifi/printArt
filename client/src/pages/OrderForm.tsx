@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Phone, Mail, MessageCircle, ArrowRight } from "lucide-react";
+import { Phone, Mail, MessageCircle, ArrowRight, Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { toast } from "sonner";
 
 interface OrderFormData {
   name: string;
@@ -24,7 +25,8 @@ export default function OrderForm() {
     deadline: "",
   });
 
-  const [submitted, setSubmitted] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -38,11 +40,11 @@ export default function OrderForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowConfirmation(true);
+  };
 
-    // إنشاء رسالة البريد الإلكتروني
-    const emailSubject = `طلب خدمة جديد - ${formData.service}`;
-    const emailBody = `
-اسم العميل: ${formData.name}
+  const formatMessageBody = () => {
+    return `اسم العميل: ${formData.name}
 رقم الهاتف: ${formData.phone}
 البريد الإلكتروني: ${formData.email}
 
@@ -54,42 +56,27 @@ export default function OrderForm() {
 ${formData.description}
 
 ---
-تم إرسال هذا الطلب من موقع PrintArt
-    `.trim();
+تم إرسال هذا الطلب من موقع PrintArt`;
+  };
 
-    // رابط البريد الإلكتروني
+  const handleEmailSend = () => {
+    const emailSubject = `طلب خدمة جديد - ${formData.service}`;
+    const emailBody = formatMessageBody();
     const emailLink = `mailto:univ08000@gmail.com?subject=${encodeURIComponent(
       emailSubject
     )}&body=${encodeURIComponent(emailBody)}`;
 
-    // رابط الواتساب
-    const whatsappMessage = `مرحباً، أنا ${formData.name}
-    
-أريد طلب خدمة: ${formData.service}
+    // نسخ البيانات إلى الحافظة
+    navigator.clipboard.writeText(formatMessageBody());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
 
-الوصف: ${formData.description}
+    // فتح البريد الإلكتروني
+    window.location.href = emailLink;
 
-رقمي: ${formData.phone}
-بريدي: ${formData.email}`;
+    toast.success("تم نسخ البيانات! سيتم فتح البريد الإلكتروني الآن");
 
-    const whatsappLink = `https://wa.me/213669292026?text=${encodeURIComponent(
-      whatsappMessage
-    )}`;
-
-    // حفظ البيانات في localStorage للمرجع
-    localStorage.setItem("lastOrder", JSON.stringify(formData));
-
-    // إظهار رسالة النجاح
-    setSubmitted(true);
-
-    // تخزين الروابط في state مؤقتاً
-    const emailElement = document.getElementById("emailLink") as HTMLAnchorElement;
-    const whatsappElement = document.getElementById("whatsappLink") as HTMLAnchorElement;
-
-    if (emailElement) emailElement.href = emailLink;
-    if (whatsappElement) whatsappElement.href = whatsappLink;
-
-    // إعادة تعيين النموذج بعد 2 ثانية
+    // إعادة تعيين النموذج
     setTimeout(() => {
       setFormData({
         name: "",
@@ -99,8 +86,52 @@ ${formData.description}
         description: "",
         deadline: "",
       });
-      setSubmitted(false);
-    }, 3000);
+      setShowConfirmation(false);
+    }, 1500);
+  };
+
+  const handleWhatsAppSend = () => {
+    const whatsappMessage = `مرحباً، أنا ${formData.name}
+    
+أريد طلب خدمة: ${formData.service}
+
+الوصف: ${formData.description}
+
+رقمي: ${formData.phone}
+بريدي: ${formData.email}
+
+الموعد النهائي: ${formData.deadline || "لم يتم تحديده"}`;
+
+    const whatsappLink = `https://wa.me/213669292026?text=${encodeURIComponent(
+      whatsappMessage
+    )}`;
+
+    // نسخ البيانات إلى الحافظة
+    navigator.clipboard.writeText(formatMessageBody());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+
+    // فتح الواتساب
+    window.open(whatsappLink, "_blank");
+
+    toast.success("تم نسخ البيانات! سيتم فتح الواتساب الآن");
+
+    // إعادة تعيين النموذج
+    setTimeout(() => {
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        service: "",
+        description: "",
+        deadline: "",
+      });
+      setShowConfirmation(false);
+    }, 1500);
+  };
+
+  const handleCancel = () => {
+    setShowConfirmation(false);
   };
 
   return (
@@ -133,39 +164,6 @@ ${formData.description}
                   يرجى ملء جميع البيانات المطلوبة لتقديم طلبك بشكل صحيح
                 </p>
               </div>
-
-              {submitted && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-700 font-medium mb-3">
-                    ✓ تم استقبال طلبك بنجاح!
-                  </p>
-                  <p className="text-green-600 text-sm mb-4">
-                    يمكنك الآن إرسال تفاصيل طلبك عبر:
-                  </p>
-                  <div className="flex gap-3">
-                    <a
-                      id="emailLink"
-                      href="#"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-smooth"
-                    >
-                      <Mail className="w-4 h-4" />
-                      إرسال عبر البريد
-                    </a>
-                    <a
-                      id="whatsappLink"
-                      href="#"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-smooth"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      إرسال عبر واتساب
-                    </a>
-                  </div>
-                </div>
-              )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Name */}
@@ -299,28 +297,18 @@ ${formData.description}
                     </div>
                     <h4 className="font-bold text-[#1a1a1a]">الهاتف</h4>
                   </div>
-                  <a
-                    href="tel:0669292026"
-                    className="text-[#B87333] hover:text-[#8B5A2B] transition-smooth font-medium"
-                  >
-                    0669292026
-                  </a>
+                  <p className="text-[#8B8680] serif-accent">0669292026</p>
                 </div>
 
                 {/* Email */}
                 <div className="p-4 bg-[#F5F1E8] rounded-lg">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-[#2D5016] rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-[#8B8680] rounded-lg flex items-center justify-center">
                       <Mail className="w-5 h-5 text-white" />
                     </div>
                     <h4 className="font-bold text-[#1a1a1a]">البريد</h4>
                   </div>
-                  <a
-                    href="mailto:info@printart.dz"
-                    className="text-[#B87333] hover:text-[#8B5A2B] transition-smooth font-medium break-all"
-                  >
-                    info@printart.dz
-                  </a>
+                  <p className="text-[#8B8680] serif-accent">univ08000@gmail.com</p>
                 </div>
 
                 {/* WhatsApp */}
@@ -331,43 +319,66 @@ ${formData.description}
                     </div>
                     <h4 className="font-bold text-[#1a1a1a]">واتساب</h4>
                   </div>
-                  <a
-                    href="https://wa.me/213669292026"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#B87333] hover:text-[#8B5A2B] transition-smooth font-medium"
-                  >
-                    تواصل مباشر
-                  </a>
+                  <p className="text-[#8B8680] serif-accent">تواصل مباشر</p>
                 </div>
-              </div>
 
-              {/* Tips */}
-              <div className="mt-6 p-4 bg-[#FFF8F0] border border-[#E8E4DB] rounded-lg">
-                <h4 className="font-bold text-[#1a1a1a] mb-3">نصائح مهمة:</h4>
-                <ul className="space-y-2 text-sm text-[#8B8680]">
-                  <li className="flex gap-2">
-                    <span className="text-[#B87333]">•</span>
-                    <span>كن واضحاً ومفصلاً في وصف احتياجاتك</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#B87333]">•</span>
-                    <span>أرفق صوراً أو ملفات إذا كانت متوفرة</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#B87333]">•</span>
-                    <span>حدد الموعد النهائي بدقة</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-[#B87333]">•</span>
-                    <span>سنرد عليك في أقرب وقت ممكن</span>
-                  </li>
-                </ul>
+                {/* Hours */}
+                <div className="p-4 bg-white border border-[#E8E4DB] rounded-lg">
+                  <h4 className="font-bold text-[#1a1a1a] mb-3">ساعات العمل</h4>
+                  <div className="space-y-2 text-sm text-[#8B8680] serif-accent">
+                    <p>السبت - الخميس: 09:00 - 18:00</p>
+                    <p>الجمعة: مغلق</p>
+                  </div>
+                </div>
               </div>
             </Card>
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="border-0 shadow-2xl max-w-md w-full p-8">
+            <h3 className="text-2xl font-bold text-[#1a1a1a] mb-4">
+              اختر طريقة الإرسال
+            </h3>
+            <p className="text-[#8B8680] mb-6">
+              كيف تريد إرسال طلبك؟
+            </p>
+
+            <div className="space-y-3 mb-6">
+              <Button
+                onClick={handleEmailSend}
+                className="w-full bg-[#8B8680] hover:bg-[#6B6560] text-white py-3 flex items-center justify-center gap-2"
+              >
+                <Mail className="w-5 h-5" />
+                إرسال عبر البريد الإلكتروني
+              </Button>
+
+              <Button
+                onClick={handleWhatsAppSend}
+                className="w-full bg-[#25D366] hover:bg-[#1fa857] text-white py-3 flex items-center justify-center gap-2"
+              >
+                <MessageCircle className="w-5 h-5" />
+                إرسال عبر واتساب
+              </Button>
+            </div>
+
+            <Button
+              onClick={handleCancel}
+              variant="outline"
+              className="w-full border-[#E8E4DB] text-[#1a1a1a] py-3"
+            >
+              إلغاء
+            </Button>
+
+            <p className="text-xs text-[#8B8680] mt-4 text-center">
+              ملاحظة: سيتم نسخ بيانات طلبك تلقائياً ليسهل عليك الإرسال
+            </p>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
