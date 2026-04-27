@@ -423,9 +423,54 @@ export default function Home() {
             <div className="bg-white p-8 rounded-lg shadow-lg">
               <h3 className="text-subheading text-[#1a1a1a] mb-6">أرسل لنا طلبك</h3>
               
-  
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[#1a1a1a] font-medium mb-2">الاسم الكامل</label>
+                  <input
+                    type="text"
+                    placeholder="أدخل اسمك"
+                    className="w-full px-4 py-3 border border-[#E8E4DB] rounded-lg focus:outline-none focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/20 transition-smooth"
+                  />
+                </div>
 
+                <div>
+                  <label className="block text-[#1a1a1a] font-medium mb-2">رقم الهاتف</label>
+                  <input
+                    type="tel"
+                    placeholder="أدخل رقم هاتفك"
+                    className="w-full px-4 py-3 border border-[#E8E4DB] rounded-lg focus:outline-none focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/20 transition-smooth"
+                  />
+                </div>
 
+                <div>
+                  <label className="block text-[#1a1a1a] font-medium mb-2">نوع الخدمة</label>
+                  <select className="w-full px-4 py-3 border border-[#E8E4DB] rounded-lg focus:outline-none focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/20 transition-smooth">
+                    <option value="">اختر الخدمة</option>
+                    <option value="thesis">إنجاز مذكرات التخرج</option>
+                    <option value="design">تصميم الهوية البصرية</option>
+                    <option value="cv">كتابة السيرة الذاتية</option>
+                    <option value="cards">كروت الأعمال</option>
+                    <option value="flyers">المطويات والإعلانات</option>
+                    <option value="other">خدمات طباعة أخرى</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[#1a1a1a] font-medium mb-2">وصف الطلب</label>
+                  <textarea
+                    rows={3}
+                    placeholder="اشرح احتياجاتك بالتفصيل"
+                    className="w-full px-4 py-3 border border-[#E8E4DB] rounded-lg focus:outline-none focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/20 transition-smooth resize-none"
+                  ></textarea>
+                </div>
+
+                <Button 
+                  onClick={handleOrderClick}
+                  className="w-full bg-[#B87333] hover:bg-[#8B5A2B] text-white py-3 text-lg font-medium"
+                >
+                  إرسال الطلب
+                </Button>
+              </div>
             </div>
           </div>
         </div>
