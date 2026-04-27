@@ -1,33 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Phone, MapPin, Mail, Printer, BookOpen, Palette, FileText, Zap, Award, Users } from "lucide-react";
+import { Phone, MapPin, Mail, Printer, BookOpen, Palette, FileText, Zap, Award, Users, MessageCircle } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
 
 export default function Home() {
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    service: "",
-    description: "",
-  });
+  const [, navigate] = useLocation();
 
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleOrderClick = () => {
+    navigate("/order");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would typically send the form data to a backend
-    console.log("Form submitted:", formData);
-    setSubmitted(true);
-    setFormData({ name: "", phone: "", service: "", description: "" });
-    setTimeout(() => setSubmitted(false), 3000);
+  const handleWhatsAppClick = (service: string) => {
+    const message = `مرحباً، أنا مهتم بخدمة: ${service}. هل يمكنكم تقديم عرض سعر؟`;
+    const whatsappLink = `https://wa.me/213669292026?text=${encodeURIComponent(message)}`;
+    window.open(whatsappLink, "_blank");
   };
 
   return (
@@ -67,12 +54,17 @@ export default function Home() {
                 PrintArt هي مكتبتك المتخصصة في الطباعة الاحترافية والخدمات الأكاديمية. نقدم حلولاً شاملة لكل احتياجاتك من طباعة عالية الجودة إلى تصميم هوية بصرية متميزة.
               </p>
               <div className="flex gap-4">
-                <Button className="bg-[#B87333] hover:bg-[#8B5A2B] text-white px-8 py-6 text-lg">
+                <Button 
+                  onClick={handleOrderClick}
+                  className="bg-[#B87333] hover:bg-[#8B5A2B] text-white px-8 py-6 text-lg"
+                >
                   اطلب الآن
                 </Button>
-                <Button variant="outline" className="border-[#B87333] text-[#B87333] px-8 py-6 text-lg hover:bg-[#F5F1E8]">
-                  تعرف أكثر
-                </Button>
+                <a href="#services" className="inline-block">
+                  <Button variant="outline" className="border-[#B87333] text-[#B87333] px-8 py-6 text-lg hover:bg-[#F5F1E8]">
+                    تعرف أكثر
+                  </Button>
+                </a>
               </div>
             </div>
             <div className="relative">
@@ -119,9 +111,21 @@ export default function Home() {
                     <span>طباعة ملونة عالية الجودة</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-[#B87333] hover:bg-[#8B5A2B] text-white">
-                  اطلب الخدمة
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    onClick={handleOrderClick}
+                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
+                  >
+                    اطلب الخدمة
+                  </Button>
+                  <Button 
+                    onClick={() => handleWhatsAppClick("إنجاز مذكرات التخرج")}
+                    variant="outline"
+                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </Card>
 
@@ -146,9 +150,21 @@ export default function Home() {
                     <span>هوية بصرية متكاملة</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-[#B87333] hover:bg-[#8B5A2B] text-white">
-                  اطلب الخدمة
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    onClick={handleOrderClick}
+                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
+                  >
+                    اطلب الخدمة
+                  </Button>
+                  <Button 
+                    onClick={() => handleWhatsAppClick("تصميم الهوية البصرية")}
+                    variant="outline"
+                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </Card>
 
@@ -173,9 +189,21 @@ export default function Home() {
                     <span>محتوى مقنع وجذاب</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-[#B87333] hover:bg-[#8B5A2B] text-white">
-                  اطلب الخدمة
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    onClick={handleOrderClick}
+                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
+                  >
+                    اطلب الخدمة
+                  </Button>
+                  <Button 
+                    onClick={() => handleWhatsAppClick("كتابة السيرة الذاتية")}
+                    variant="outline"
+                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </Card>
 
@@ -200,9 +228,21 @@ export default function Home() {
                     <span>خيارات متعددة من الورق</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-[#B87333] hover:bg-[#8B5A2B] text-white">
-                  اطلب الخدمة
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    onClick={handleOrderClick}
+                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
+                  >
+                    اطلب الخدمة
+                  </Button>
+                  <Button 
+                    onClick={() => handleWhatsAppClick("كروت الأعمال")}
+                    variant="outline"
+                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </Card>
 
@@ -227,9 +267,21 @@ export default function Home() {
                     <span>تسليم سريع وموثوق</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-[#B87333] hover:bg-[#8B5A2B] text-white">
-                  اطلب الخدمة
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    onClick={handleOrderClick}
+                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
+                  >
+                    اطلب الخدمة
+                  </Button>
+                  <Button 
+                    onClick={() => handleWhatsAppClick("المطويات والإعلانات")}
+                    variant="outline"
+                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </Card>
 
@@ -254,9 +306,21 @@ export default function Home() {
                     <span>أسعار تنافسية وجودة مضمونة</span>
                   </li>
                 </ul>
-                <Button className="w-full bg-[#B87333] hover:bg-[#8B5A2B] text-white">
-                  اطلب الخدمة
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    onClick={handleOrderClick}
+                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
+                  >
+                    اطلب الخدمة
+                  </Button>
+                  <Button 
+                    onClick={() => handleWhatsAppClick("خدمات طباعة أخرى")}
+                    variant="outline"
+                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </Card>
           </div>
@@ -359,78 +423,9 @@ export default function Home() {
             <div className="bg-white p-8 rounded-lg shadow-lg">
               <h3 className="text-subheading text-[#1a1a1a] mb-6">أرسل لنا طلبك</h3>
               
-              {submitted && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-700 font-medium">تم استقبال طلبك بنجاح! سنتواصل معك قريباً.</p>
-                </div>
-              )}
+  
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-[#1a1a1a] font-medium mb-2">الاسم الكامل</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-[#E8E4DB] rounded-lg focus:outline-none focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/20 transition-smooth"
-                    placeholder="أدخل اسمك"
-                  />
-                </div>
 
-                <div>
-                  <label className="block text-[#1a1a1a] font-medium mb-2">رقم الهاتف</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-[#E8E4DB] rounded-lg focus:outline-none focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/20 transition-smooth"
-                    placeholder="أدخل رقم هاتفك"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[#1a1a1a] font-medium mb-2">نوع الخدمة</label>
-                  <select
-                    name="service"
-                    value={formData.service}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 border border-[#E8E4DB] rounded-lg focus:outline-none focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/20 transition-smooth"
-                  >
-                    <option value="">اختر الخدمة</option>
-                    <option value="thesis">إنجاز مذكرات التخرج</option>
-                    <option value="design">تصميم الهوية البصرية</option>
-                    <option value="cv">كتابة السيرة الذاتية</option>
-                    <option value="cards">كروت الأعمال</option>
-                    <option value="flyers">المطويات والإعلانات</option>
-                    <option value="other">خدمات طباعة أخرى</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[#1a1a1a] font-medium mb-2">وصف الطلب</label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    required
-                    rows={4}
-                    className="w-full px-4 py-3 border border-[#E8E4DB] rounded-lg focus:outline-none focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/20 transition-smooth resize-none"
-                    placeholder="اشرح احتياجاتك بالتفصيل"
-                  ></textarea>
-                </div>
-
-                <Button 
-                  type="submit"
-                  className="w-full bg-[#B87333] hover:bg-[#8B5A2B] text-white py-3 text-lg font-medium"
-                >
-                  إرسال الطلب
-                </Button>
-              </form>
             </div>
           </div>
         </div>
