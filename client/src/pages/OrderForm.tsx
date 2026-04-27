@@ -10,7 +10,6 @@ interface OrderFormData {
   email: string;
   service: string;
   description: string;
-  budget?: string;
   deadline?: string;
 }
 
@@ -22,7 +21,6 @@ export default function OrderForm() {
     email: "",
     service: "",
     description: "",
-    budget: "",
     deadline: "",
   });
 
@@ -50,7 +48,6 @@ export default function OrderForm() {
 
 نوع الخدمة: ${formData.service}
 
-الميزانية المتوقعة: ${formData.budget || "لم يتم تحديدها"}
 الموعد النهائي: ${formData.deadline || "لم يتم تحديده"}
 
 وصف الطلب:
@@ -100,7 +97,6 @@ ${formData.description}
         email: "",
         service: "",
         description: "",
-        budget: "",
         deadline: "",
       });
       setSubmitted(false);
@@ -240,21 +236,6 @@ ${formData.description}
                     <option value="flyers">المطويات والإعلانات</option>
                     <option value="other">خدمات طباعة أخرى</option>
                   </select>
-                </div>
-
-                {/* Budget */}
-                <div>
-                  <label className="block text-[#1a1a1a] font-medium mb-2">
-                    الميزانية المتوقعة (اختياري)
-                  </label>
-                  <input
-                    type="text"
-                    name="budget"
-                    value={formData.budget}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-[#E8E4DB] rounded-lg focus:outline-none focus:border-[#B87333] focus:ring-2 focus:ring-[#B87333]/20 transition-smooth"
-                    placeholder="مثال: 5000 دج"
-                  />
                 </div>
 
                 {/* Deadline */}
