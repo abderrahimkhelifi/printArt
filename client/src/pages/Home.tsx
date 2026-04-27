@@ -405,7 +405,7 @@ export default function Home() {
                   </div>
                   <div>
                     <h3 className="font-bold text-[#1a1a1a] mb-1">البريد الإلكتروني</h3>
-                    <p className="text-[#8B8680] serif-accent">info@printart.dz</p>
+                    <p className="text-[#8B8680] serif-accent">univ08000@gmail.com</p>
                   </div>
                 </div>
               </div>

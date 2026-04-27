@@ -58,7 +58,7 @@ ${formData.description}
     `.trim();
 
     // رابط البريد الإلكتروني
-    const emailLink = `mailto:info@printart.dz?subject=${encodeURIComponent(
+    const emailLink = `mailto:univ08000@gmail.com?subject=${encodeURIComponent(
       emailSubject
     )}&body=${encodeURIComponent(emailBody)}`;
 
