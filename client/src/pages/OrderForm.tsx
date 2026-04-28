@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Phone, Mail, MessageCircle, ArrowRight, Copy, Check } from "lucide-react";
+import { Phone, Mail, MessageCircle, ArrowRight, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
@@ -14,6 +14,12 @@ interface OrderFormData {
   deadline?: string;
 }
 
+interface UploadedFile {
+  file: File;
+  name: string;
+  size: string;
+}
+
 export default function OrderForm() {
   const [, navigate] = useLocation();
   const [formData, setFormData] = useState<OrderFormData>({
@@ -25,8 +31,8 @@ export default function OrderForm() {
     deadline: "",
   });
 
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -38,13 +44,48 @@ export default function OrderForm() {
     }));
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const allowedTypes = ['image/jpeg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const maxSize = 10 * 1024 * 1024;
+
+    Array.from(files).forEach((file) => {
+      if (!allowedTypes.includes(file.type)) {
+        toast.error(`نوع الملف غير مدعوم: ${file.name}`);
+        return;
+      }
+
+      if (file.size > maxSize) {
+        toast.error(`الملف كبير جدا: ${file.name}`);
+        return;
+      }
+
+      const newFile: UploadedFile = {
+        file,
+        name: file.name,
+        size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+      };
+
+      setUploadedFiles((prev) => [...prev, newFile]);
+      toast.success(`تم رفع الملف: ${file.name}`);
+    });
+
+    e.target.value = '';
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setShowConfirmation(true);
   };
 
   const formatMessageBody = () => {
-    return `اسم العميل: ${formData.name}
+    let message = `اسم العميل: ${formData.name}
 رقم الهاتف: ${formData.phone}
 البريد الإلكتروني: ${formData.email}
 
@@ -53,10 +94,17 @@ export default function OrderForm() {
 الموعد النهائي: ${formData.deadline || "لم يتم تحديده"}
 
 وصف الطلب:
-${formData.description}
+${formData.description}`;
 
----
-تم إرسال هذا الطلب من موقع PrintArt`;
+    if (uploadedFiles.length > 0) {
+      message += `\n\nالملفات المرفقة: ${uploadedFiles.length} ملف(ات)`;
+      uploadedFiles.forEach((file) => {
+        message += `\n- ${file.name} (${file.size})`;
+      });
+    }
+
+    message += `\n\n---\nتم إرسال هذا الطلب من موقع PrintArt`;
+    return message;
   };
 
   const handleEmailSend = () => {
@@ -66,17 +114,10 @@ ${formData.description}
       emailSubject
     )}&body=${encodeURIComponent(emailBody)}`;
 
-    // نسخ البيانات إلى الحافظة
     navigator.clipboard.writeText(formatMessageBody());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-
-    // فتح البريد الإلكتروني
     window.location.href = emailLink;
-
     toast.success("تم نسخ البيانات! سيتم فتح البريد الإلكتروني الآن");
 
-    // إعادة تعيين النموذج
     setTimeout(() => {
       setFormData({
         name: "",
@@ -86,6 +127,7 @@ ${formData.description}
         description: "",
         deadline: "",
       });
+      setUploadedFiles([]);
       setShowConfirmation(false);
     }, 1500);
   };
@@ -100,23 +142,20 @@ ${formData.description}
 رقمي: ${formData.phone}
 بريدي: ${formData.email}
 
-الموعد النهائي: ${formData.deadline || "لم يتم تحديده"}`;
+الموعد النهائي: ${formData.deadline || "لم يتم تحديده"}${
+      uploadedFiles.length > 0
+        ? `\n\nالملفات المرفقة: ${uploadedFiles.length} ملف(ات)\n${uploadedFiles.map((f) => `- ${f.name}`).join("\n")}`
+        : ""
+    }`;
 
     const whatsappLink = `https://wa.me/213669292026?text=${encodeURIComponent(
       whatsappMessage
     )}`;
 
-    // نسخ البيانات إلى الحافظة
     navigator.clipboard.writeText(formatMessageBody());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-
-    // فتح الواتساب
     window.open(whatsappLink, "_blank");
-
     toast.success("تم نسخ البيانات! سيتم فتح الواتساب الآن");
 
-    // إعادة تعيين النموذج
     setTimeout(() => {
       setFormData({
         name: "",
@@ -126,6 +165,7 @@ ${formData.description}
         description: "",
         deadline: "",
       });
+      setUploadedFiles([]);
       setShowConfirmation(false);
     }, 1500);
   };
@@ -269,6 +309,64 @@ ${formData.description}
 - ما هي الألوان والأسلوب المفضل؟
 - أي معلومات إضافية مهمة؟"
                   ></textarea>
+                </div>
+
+                {/* File Upload */}
+                <div>
+                  <label className="block text-[#1a1a1a] font-medium mb-2">
+                    رفع الملفات (اختياري)
+                  </label>
+                  <div className="border-2 border-dashed border-[#E8E4DB] rounded-lg p-6 text-center hover:border-[#B87333] transition-smooth">
+                    <input
+                      type="file"
+                      id="fileInput"
+                      multiple
+                      accept=".jpg,.jpeg,.pdf,.doc,.docx"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <label htmlFor="fileInput" className="cursor-pointer">
+                      <Upload className="w-8 h-8 mx-auto mb-2 text-[#B87333]" />
+                      <p className="text-[#1a1a1a] font-medium mb-1">اضغط لرفع الملفات</p>
+                      <p className="text-sm text-[#8B8680]">
+                        JPG, PDF, Word (الحد الأقصى 10MB لكل ملف)
+                      </p>
+                    </label>
+                  </div>
+
+                  {/* Uploaded Files List */}
+                  {uploadedFiles.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm font-medium text-[#1a1a1a]">
+                        الملفات المرفوعة ({uploadedFiles.length}):
+                      </p>
+                      {uploadedFiles.map((file, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between bg-[#F5F1E8] p-3 rounded-lg"
+                        >
+                          <div className="flex items-center gap-2 flex-1">
+                            <div className="w-8 h-8 bg-[#B87333] rounded flex items-center justify-center text-white text-xs font-bold">
+                              {file.name.split('.').pop()?.toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-[#1a1a1a] truncate">
+                                {file.name}
+                              </p>
+                              <p className="text-xs text-[#8B8680]">{file.size}</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeFile(index)}
+                            className="ml-2 p-1 hover:bg-red-100 rounded transition-smooth"
+                          >
+                            <X className="w-5 h-5 text-red-500" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <Button
