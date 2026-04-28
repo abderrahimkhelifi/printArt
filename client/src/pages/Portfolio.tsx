@@ -91,6 +91,14 @@ export default function Portfolio() {
                       {work.description || "عمل احترافي من أعمالنا المتميزة"}
                     </p>
 
+                    {/* Price */}
+                    {work.price && (
+                      <div className="mb-4 pb-4 border-b border-gray-200">
+                        <p className="text-2xl font-bold text-[#B87333]">{work.price} دج</p>
+                        <p className="text-xs text-[#8B8680] mt-1">السعر التقريبي</p>
+                      </div>
+                    )}
+
                     {/* Rating */}
                     <div className="flex items-center gap-1 mb-4">
                       {[...Array(5)].map((_, i) => (
