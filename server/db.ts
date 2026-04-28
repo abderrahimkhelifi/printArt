@@ -113,12 +113,14 @@ export async function getOrderById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function updateOrderStatus(id: number, status: string, notes?: string) {
+export async function updateOrderStatus(id: number, status: string, adminNotes?: string, progress?: number, estimatedPrice?: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
   const updateData: Record<string, unknown> = { status };
-  if (notes) updateData.notes = notes;
+  if (adminNotes !== undefined) updateData.adminNotes = adminNotes;
+  if (progress !== undefined) updateData.progress = progress;
+  if (estimatedPrice !== undefined) updateData.estimatedPrice = estimatedPrice;
   
   return await db.update(orders).set(updateData).where(eq(orders.id, id));
 }
@@ -145,6 +147,13 @@ export async function deletePortfolioWork(id: number) {
   return await db.delete(portfolioWorks).where(eq(portfolioWorks.id, id));
 }
 
+export async function updatePortfolioWork(id: number, data: Partial<InsertPortfolioWork>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.update(portfolioWorks).set(data).where(eq(portfolioWorks.id, id));
+}
+
 // Services queries
 export async function createService(service: InsertService) {
   const db = await getDb();
@@ -165,6 +174,17 @@ export async function updateService(id: number, data: Partial<InsertService>) {
   if (!db) throw new Error("Database not available");
   
   return await db.update(services).set(data).where(eq(services.id, id));
+}
+
+export async function toggleServiceActive(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const service = await db.select().from(services).where(eq(services.id, id)).limit(1);
+  if (service.length === 0) throw new Error("Service not found");
+  
+  const newStatus = service[0].isActive === 1 ? 0 : 1;
+  return await db.update(services).set({ isActive: newStatus }).where(eq(services.id, id));
 }
 
 // Notifications queries

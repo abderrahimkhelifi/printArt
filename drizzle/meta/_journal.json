@@ -15,6 +15,13 @@
       "when": 1777338274236,
       "tag": "0001_giant_silver_samurai",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1777339364778,
+      "tag": "0002_peaceful_morgan_stark",
+      "breakpoints": true
     }
   ]
 }

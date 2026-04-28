@@ -75,17 +75,22 @@ export const appRouter = router({
     updateStatus: adminProcedure
       .input(z.object({
         id: z.number(),
-        status: z.enum(["new", "in_progress", "completed", "cancelled"]),
-        notes: z.string().optional(),
+        status: z.enum(["new", "pending_approval", "approved", "in_progress", "completed", "delayed", "cancelled"]),
+        progress: z.number().optional(),
+        estimatedPrice: z.number().optional(),
+        adminNotes: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
-        const result = await db.updateOrderStatus(input.id, input.status, input.notes);
+        const result = await db.updateOrderStatus(input.id, input.status, input.adminNotes, input.progress, input.estimatedPrice);
 
         // Create notification for status change
         const statusLabels: Record<string, string> = {
           new: "جديد",
+          pending_approval: "في انتظار الموافقة",
+          approved: "موافق عليه",
           in_progress: "قيد التنفيذ",
           completed: "مكتمل",
+          delayed: "مؤجل",
           cancelled: "ملغى",
         };
 
@@ -130,6 +135,20 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         return await db.deletePortfolioWork(input.id);
       }),
+
+    // Update portfolio work (admin only)
+    update: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        imageUrl: z.string().optional(),
+        category: z.string().optional(),
+        price: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.updatePortfolioWork(input.id, input);
+      }),
   }),
 
   // Services Router
@@ -167,6 +186,13 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
         return await db.updateService(id, data);
+      }),
+
+    // Toggle service active status (admin only)
+    toggleActive: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        return await db.toggleServiceActive(input.id);
       }),
   }),
 

@@ -36,8 +36,11 @@ export const orders = mysqlTable("orders", {
   deadline: timestamp("deadline"),
   fileUrl: text("fileUrl"),
   fileName: varchar("fileName", { length: 255 }),
-  status: mysqlEnum("status", ["new", "in_progress", "completed", "cancelled"]).default("new").notNull(),
+  status: mysqlEnum("status", ["new", "pending_approval", "approved", "in_progress", "completed", "delayed", "cancelled"]).default("new").notNull(),
+  progress: int("progress").default(0).notNull(),
+  estimatedPrice: int("estimatedPrice"),
   notes: text("notes"),
+  adminNotes: text("adminNotes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -52,6 +55,7 @@ export const portfolioWorks = mysqlTable("portfolioWorks", {
   description: text("description"),
   imageUrl: text("imageUrl").notNull(),
   category: varchar("category", { length: 100 }).notNull(),
+  price: int("price"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
