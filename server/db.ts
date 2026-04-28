@@ -169,11 +169,49 @@ export async function getServices() {
   return await db.select().from(services).where(eq(services.isActive, 1));
 }
 
+// Get services with pagination
+export async function getServicesPaginated(page: number = 1, limit: number = 10) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const offset = (page - 1) * limit;
+  
+  const data = await db.select().from(services).limit(limit).offset(offset).orderBy(desc(services.createdAt));
+  
+  const countResult = await db.select().from(services);
+  const total = countResult.length;
+  
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+}
+
+export async function getServiceById(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.select().from(services).where(eq(services.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
 export async function updateService(id: number, data: Partial<InsertService>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
   return await db.update(services).set(data).where(eq(services.id, id));
+}
+
+export async function deleteService(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.delete(services).where(eq(services.id, id));
 }
 
 export async function toggleServiceActive(id: number) {

@@ -69,6 +69,7 @@ export const services = mysqlTable("services", {
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   basePrice: int("basePrice").notNull(),
+  imagePath: varchar("imagePath", { length: 255 }),
   isActive: int("isActive").default(1).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

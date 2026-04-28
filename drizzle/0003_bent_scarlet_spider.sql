@@ -1,0 +1,1 @@
+ALTER TABLE `services` ADD `imagePath` varchar(255);
