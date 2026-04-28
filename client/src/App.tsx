@@ -9,16 +9,20 @@ import OrderForm from "./pages/OrderForm";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import Portfolio from "./pages/Portfolio";
+import Services from "./pages/Services";
+import AdminServices from "./pages/AdminServices";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"\\"} component={Home} />
+      <Route path={"/services"} component={Services} />
       <Route path={"/order"} component={OrderForm} />
       <Route path={"/portfolio"} component={Portfolio} />
       <Route path={"/admin-login"} component={AdminLogin} />
       <Route path={"/admin"} component={AdminDashboard} />
+      <Route path={"/admin/services"} component={AdminServices} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

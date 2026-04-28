@@ -34,7 +34,7 @@ export default function Home() {
             <h1 className="text-2xl font-bold copper-text">PrintArt</h1>
           </div>
           <div className="hidden md:flex gap-8 items-center">
-            <a href="#services" className="text-[#1a1a1a] hover:copper-text transition-smooth">الخدمات</a>
+            <a href="/services" className="text-[#1a1a1a] hover:copper-text transition-smooth">الخدمات</a>
             <a href="#about" className="text-[#1a1a1a] hover:copper-text transition-smooth">عن المكتبة</a>
             <a href="#contact" className="text-[#1a1a1a] hover:copper-text transition-smooth">التواصل</a>
             <Button 
@@ -44,6 +44,13 @@ export default function Home() {
             >
               <Image className="w-4 h-4 mr-2" />
               معرض الأعمال
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate("/admin/services")}
+              className="text-[#B87333] hover:copper-text font-semibold"
+            >
+              لوحة التحكم
             </Button>
           </div>
         </div>
