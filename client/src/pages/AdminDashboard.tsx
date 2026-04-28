@@ -1,23 +1,38 @@
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertCircle, CheckCircle, Clock, XCircle, Bell, Plus } from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, CheckCircle, Clock, XCircle, Bell, Plus, Edit, Trash2, LogOut, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminDashboard() {
-  const { user, loading } = useAuth();
+  const [, navigate] = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedTab, setSelectedTab] = useState("orders");
+  const [showAddWork, setShowAddWork] = useState(false);
+  const [showAddService, setShowAddService] = useState(false);
+  const [newWork, setNewWork] = useState({ title: "", description: "", imageUrl: "", category: "" });
+  const [newService, setNewService] = useState({ name: "", description: "", basePrice: 0 });
+
+  // Check admin authentication
+  useEffect(() => {
+    const adminSession = localStorage.getItem("adminSession");
+    if (!adminSession) {
+      navigate("/admin-login");
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, [navigate]);
 
   // Queries
-  const ordersQuery = trpc.orders.list.useQuery();
-  const notificationsQuery = trpc.notifications.list.useQuery();
-  const portfolioQuery = trpc.portfolio.list.useQuery();
-  const servicesQuery = trpc.services.list.useQuery();
+  const ordersQuery = trpc.orders.list.useQuery(undefined, { enabled: isAuthenticated });
+  const notificationsQuery = trpc.notifications.list.useQuery(undefined, { enabled: isAuthenticated });
+  const portfolioQuery = trpc.portfolio.list.useQuery(undefined, { enabled: isAuthenticated });
+  const servicesQuery = trpc.services.list.useQuery(undefined, { enabled: isAuthenticated });
 
   // Mutations
   const updateOrderStatusMutation = trpc.orders.updateStatus.useMutation({
@@ -31,26 +46,48 @@ export default function AdminDashboard() {
     },
   });
 
-  const markNotificationAsReadMutation = trpc.notifications.markAsRead.useMutation({
+  const createPortfolioMutation = trpc.portfolio.create.useMutation({
     onSuccess: () => {
-      notificationsQuery.refetch();
+      toast.success("تم إضافة العمل بنجاح");
+      portfolioQuery.refetch();
+      setShowAddWork(false);
+      setNewWork({ title: "", description: "", imageUrl: "", category: "" });
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 
-  if (loading) {
-    return <DashboardLayout>جاري التحميل...</DashboardLayout>;
-  }
+  const deletePortfolioMutation = trpc.portfolio.delete.useMutation({
+    onSuccess: () => {
+      toast.success("تم حذف العمل بنجاح");
+      portfolioQuery.refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
 
-  if (!user || user.role !== "admin") {
-    return (
-      <DashboardLayout>
-        <div className="text-center py-12">
-          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-          <h1 className="text-2xl font-bold mb-2">الوصول مرفوض</h1>
-          <p className="text-gray-600">أنت لا تملك صلاحيات الوصول إلى لوحة التحكم</p>
-        </div>
-      </DashboardLayout>
-    );
+  const createServiceMutation = trpc.services.create.useMutation({
+    onSuccess: () => {
+      toast.success("تم إضافة الخدمة بنجاح");
+      servicesQuery.refetch();
+      setShowAddService(false);
+      setNewService({ name: "", description: "", basePrice: 0 });
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleLogout = () => {
+    localStorage.removeItem("adminSession");
+    toast.success("تم تسجيل الخروج");
+    navigate("/");
+  };
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   const getStatusIcon = (status: string) => {
@@ -99,47 +136,51 @@ export default function AdminDashboard() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">لوحة التحكم</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Bell className="w-4 h-4 mr-2" />
-              الإشعارات ({notificationsQuery.data?.length || 0})
-            </Button>
-          </div>
+          <Button
+            onClick={handleLogout}
+            variant="outline"
+            className="text-red-600 hover:bg-red-50"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            تسجيل خروج
+          </Button>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-6">
             <div className="text-sm text-gray-600 mb-2">الطلبات الجديدة</div>
-            <div className="text-3xl font-bold">
+            <div className="text-3xl font-bold text-blue-600">
               {ordersQuery.data?.filter((o) => o.status === "new").length || 0}
             </div>
           </Card>
           <Card className="p-6">
             <div className="text-sm text-gray-600 mb-2">قيد التنفيذ</div>
-            <div className="text-3xl font-bold">
+            <div className="text-3xl font-bold text-yellow-600">
               {ordersQuery.data?.filter((o) => o.status === "in_progress").length || 0}
             </div>
           </Card>
           <Card className="p-6">
             <div className="text-sm text-gray-600 mb-2">المكتملة</div>
-            <div className="text-3xl font-bold">
+            <div className="text-3xl font-bold text-green-600">
               {ordersQuery.data?.filter((o) => o.status === "completed").length || 0}
             </div>
           </Card>
           <Card className="p-6">
             <div className="text-sm text-gray-600 mb-2">إجمالي الطلبات</div>
-            <div className="text-3xl font-bold">{ordersQuery.data?.length || 0}</div>
+            <div className="text-3xl font-bold text-[#B87333]">
+              {ordersQuery.data?.length || 0}
+            </div>
           </Card>
         </div>
 
         {/* Tabs */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList>
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="orders">الطلبات</TabsTrigger>
-            <TabsTrigger value="notifications">الإشعارات</TabsTrigger>
             <TabsTrigger value="portfolio">الأعمال</TabsTrigger>
             <TabsTrigger value="services">الخدمات</TabsTrigger>
+            <TabsTrigger value="notifications">الإشعارات</TabsTrigger>
           </TabsList>
 
           {/* Orders Tab */}
@@ -149,11 +190,11 @@ export default function AdminDashboard() {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-900">العميل</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-900">الخدمة</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-900">الحالة</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-900">التاريخ</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-900">الإجراءات</th>
+                      <th className="px-6 py-3 text-right text-sm font-medium text-gray-900">العميل</th>
+                      <th className="px-6 py-3 text-right text-sm font-medium text-gray-900">الخدمة</th>
+                      <th className="px-6 py-3 text-right text-sm font-medium text-gray-900">الحالة</th>
+                      <th className="px-6 py-3 text-right text-sm font-medium text-gray-900">التاريخ</th>
+                      <th className="px-6 py-3 text-right text-sm font-medium text-gray-900">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -200,40 +241,76 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Notifications Tab */}
-          <TabsContent value="notifications" className="space-y-4">
-            {notificationsQuery.data?.map((notification) => (
-              <Card key={notification.id} className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold">{notification.title}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{notification.content}</p>
-                    <p className="text-xs text-gray-400 mt-2">
-                      {new Date(notification.createdAt).toLocaleString("ar-SA")}
-                    </p>
-                  </div>
-                  {!notification.isRead && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        markNotificationAsReadMutation.mutate({ id: notification.id });
-                      }}
-                    >
-                      وسّم كمقروء
-                    </Button>
-                  )}
-                </div>
-              </Card>
-            ))}
-          </TabsContent>
-
           {/* Portfolio Tab */}
           <TabsContent value="portfolio" className="space-y-4">
-            <Button className="mb-4">
+            <Button
+              onClick={() => setShowAddWork(true)}
+              className="bg-[#B87333] hover:bg-[#8B5A2B] text-white"
+            >
               <Plus className="w-4 h-4 mr-2" />
               إضافة عمل جديد
             </Button>
+
+            {showAddWork && (
+              <Card className="p-6 bg-blue-50">
+                <h3 className="font-bold mb-4">إضافة عمل جديد</h3>
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    placeholder="عنوان العمل"
+                    value={newWork.title}
+                    onChange={(e) => setNewWork({ ...newWork, title: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <textarea
+                    placeholder="وصف العمل"
+                    value={newWork.description}
+                    onChange={(e) => setNewWork({ ...newWork, description: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg"
+                    rows={3}
+                  />
+                  <input
+                    type="text"
+                    placeholder="رابط الصورة"
+                    value={newWork.imageUrl}
+                    onChange={(e) => setNewWork({ ...newWork, imageUrl: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <select
+                    value={newWork.category}
+                    onChange={(e) => setNewWork({ ...newWork, category: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  >
+                    <option value="">اختر الفئة</option>
+                    <option value="مذكرات التخرج">مذكرات التخرج</option>
+                    <option value="التصميم">التصميم</option>
+                    <option value="السيرة الذاتية">السيرة الذاتية</option>
+                    <option value="كروت الأعمال">كروت الأعمال</option>
+                  </select>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => {
+                        if (newWork.title && newWork.imageUrl && newWork.category) {
+                          createPortfolioMutation.mutate(newWork);
+                        } else {
+                          toast.error("يرجى ملء جميع الحقول المطلوبة");
+                        }
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      حفظ
+                    </Button>
+                    <Button
+                      onClick={() => setShowAddWork(false)}
+                      variant="outline"
+                    >
+                      إلغاء
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {portfolioQuery.data?.map((work) => (
                 <Card key={work.id} className="overflow-hidden">
@@ -241,6 +318,19 @@ export default function AdminDashboard() {
                   <div className="p-4">
                     <h3 className="font-semibold">{work.title}</h3>
                     <p className="text-sm text-gray-600 mt-1">{work.category}</p>
+                    <div className="flex gap-2 mt-4">
+                      <Button size="sm" variant="outline" className="flex-1">
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 text-red-600"
+                        onClick={() => deletePortfolioMutation.mutate({ id: work.id })}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))}
@@ -249,19 +339,72 @@ export default function AdminDashboard() {
 
           {/* Services Tab */}
           <TabsContent value="services" className="space-y-4">
-            <Button className="mb-4">
+            <Button
+              onClick={() => setShowAddService(true)}
+              className="bg-[#B87333] hover:bg-[#8B5A2B] text-white"
+            >
               <Plus className="w-4 h-4 mr-2" />
               إضافة خدمة جديدة
             </Button>
+
+            {showAddService && (
+              <Card className="p-6 bg-blue-50">
+                <h3 className="font-bold mb-4">إضافة خدمة جديدة</h3>
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    placeholder="اسم الخدمة"
+                    value={newService.name}
+                    onChange={(e) => setNewService({ ...newService, name: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <textarea
+                    placeholder="وصف الخدمة"
+                    value={newService.description}
+                    onChange={(e) => setNewService({ ...newService, description: e.target.value })}
+                    className="w-full px-4 py-2 border rounded-lg"
+                    rows={3}
+                  />
+                  <input
+                    type="number"
+                    placeholder="السعر الأساسي"
+                    value={newService.basePrice}
+                    onChange={(e) => setNewService({ ...newService, basePrice: parseInt(e.target.value) })}
+                    className="w-full px-4 py-2 border rounded-lg"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => {
+                        if (newService.name && newService.basePrice > 0) {
+                          createServiceMutation.mutate(newService);
+                        } else {
+                          toast.error("يرجى ملء جميع الحقول المطلوبة");
+                        }
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      حفظ
+                    </Button>
+                    <Button
+                      onClick={() => setShowAddService(false)}
+                      variant="outline"
+                    >
+                      إلغاء
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             <Card>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-900">اسم الخدمة</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-900">السعر الأساسي</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-900">الحالة</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-900">الإجراءات</th>
+                      <th className="px-6 py-3 text-right text-sm font-medium text-gray-900">اسم الخدمة</th>
+                      <th className="px-6 py-3 text-right text-sm font-medium text-gray-900">السعر</th>
+                      <th className="px-6 py-3 text-right text-sm font-medium text-gray-900">الحالة</th>
+                      <th className="px-6 py-3 text-right text-sm font-medium text-gray-900">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
@@ -285,6 +428,26 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </Card>
+          </TabsContent>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="space-y-4">
+            {notificationsQuery.data?.map((notification) => (
+              <Card key={notification.id} className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold">{notification.title}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{notification.content}</p>
+                    <p className="text-xs text-gray-400 mt-2">
+                      {new Date(notification.createdAt).toLocaleString("ar-SA")}
+                    </p>
+                  </div>
+                  {!notification.isRead && (
+                    <Badge className="bg-blue-100 text-blue-800">جديد</Badge>
+                  )}
+                </div>
+              </Card>
+            ))}
           </TabsContent>
         </Tabs>
       </div>

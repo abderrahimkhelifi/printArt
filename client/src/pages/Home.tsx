@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Phone, MapPin, Mail, Printer, BookOpen, Palette, FileText, Zap, Award, Users, MessageCircle } from "lucide-react";
+import { Phone, MapPin, Mail, Printer, BookOpen, Palette, FileText, Zap, Award, Users, MessageCircle, Image } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 
@@ -33,10 +33,18 @@ export default function Home() {
             </div>
             <h1 className="text-2xl font-bold copper-text">PrintArt</h1>
           </div>
-          <div className="hidden md:flex gap-8">
+          <div className="hidden md:flex gap-8 items-center">
             <a href="#services" className="text-[#1a1a1a] hover:copper-text transition-smooth">الخدمات</a>
             <a href="#about" className="text-[#1a1a1a] hover:copper-text transition-smooth">عن المكتبة</a>
             <a href="#contact" className="text-[#1a1a1a] hover:copper-text transition-smooth">التواصل</a>
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate("/portfolio")}
+              className="text-[#1a1a1a] hover:copper-text"
+            >
+              <Image className="w-4 h-4 mr-2" />
+              معرض الأعمال
+            </Button>
           </div>
         </div>
       </nav>
