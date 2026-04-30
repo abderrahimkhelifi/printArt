@@ -17,12 +17,21 @@ export async function verifyAdminCredentials(
 ): Promise<boolean> {
   // التحقق من البريد الإلكتروني
   if (email !== ENV.adminEmail) {
+    console.log("[Auth] Email mismatch:", email, "vs", ENV.adminEmail);
     return false;
   }
-
-  // مقارنة كلمة المرور باستخدام bcrypt
+  
+  // مقارنة كلمة المرور - إذا كانت كلمة المرور في الـ ENV غير مشفرة، نقارنها مباشرة
   try {
+    // محاولة المقارنة المباشرة أولاً (في حالة أن كلمة المرور في الـ ENV غير مشفرة)
+    if (password === ENV.adminPassword) {
+      console.log("[Auth] Password matched directly");
+      return true;
+    }
+    
+    // إذا لم تتطابق، جرب bcrypt (في حالة أن كلمة المرور في الـ ENV مشفرة)
     const isPasswordValid = await bcryptjs.compare(password, ENV.adminPassword);
+    console.log("[Auth] Bcrypt comparison result:", isPasswordValid);
     return isPasswordValid;
   } catch (error) {
     console.error("[Auth] Error comparing passwords:", error);
