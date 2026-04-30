@@ -8,9 +8,11 @@ import Home from "./pages/Home";
 import OrderForm from "./pages/OrderForm";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
+import AdminLoginPage from "./pages/AdminLoginPage";
 import Portfolio from "./pages/Portfolio";
 import Services from "./pages/Services";
 import AdminServices from "./pages/AdminServices";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -20,9 +22,13 @@ function Router() {
       <Route path={"/services"} component={Services} />
       <Route path={"/order"} component={OrderForm} />
       <Route path={"/portfolio"} component={Portfolio} />
-      <Route path={"/admin-login"} component={AdminLogin} />
+      <Route path={"/admin-login"} component={AdminLoginPage} />
       <Route path={"/admin"} component={AdminDashboard} />
-      <Route path={"/admin/services"} component={AdminServices} />
+      <Route path={"/admin/services"}>
+        <ProtectedRoute>
+          <AdminServices />
+        </ProtectedRoute>
+      </Route>
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
