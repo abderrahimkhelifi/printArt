@@ -39,11 +39,17 @@ async function startServer() {
   const server = createServer(app);
   
   // Security middleware
-  app.use(helmet());
-  app.use(cors({
-    origin: process.env.NODE_ENV === "production" ? undefined : "*",
-    credentials: true,
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
   }));
+  app.use(cors({
+    origin: "*",
+    credentials: false,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }));
+  app.options("*", cors());
   
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
@@ -57,6 +63,11 @@ async function startServer() {
   
   // Auth API routes
   app.use("/api/auth", authRouter);
+  
+  // Health check endpoint
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
   
   // Services API routes
   app.use("/api/services", servicesRouter);
