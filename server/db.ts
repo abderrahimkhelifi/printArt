@@ -1,6 +1,6 @@
 import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, orders, InsertOrder, portfolioWorks, InsertPortfolioWork, services, InsertService, notifications, InsertNotification } from "../drizzle/schema";
+import { InsertUser, users, orders, InsertOrder, portfolioWorks, InsertPortfolioWork, services, InsertService, notifications, InsertNotification, categories, InsertCategory, settings, InsertSetting } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -245,4 +245,76 @@ export async function markNotificationAsRead(id: number) {
   if (!db) throw new Error("Database not available");
   
   return await db.update(notifications).set({ isRead: 1 }).where(eq(notifications.id, id));
+}
+
+// Categories queries
+export async function createCategory(category: InsertCategory) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.insert(categories).values(category);
+}
+
+export async function getCategories() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.select().from(categories).orderBy(desc(categories.createdAt));
+}
+
+export async function getCategoryById(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.select().from(categories).where(eq(categories.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function updateCategory(id: number, data: Partial<InsertCategory>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.update(categories).set(data).where(eq(categories.id, id));
+}
+
+export async function deleteCategory(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.delete(categories).where(eq(categories.id, id));
+}
+
+// Settings queries
+export async function getSetting(key: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getAllSettings() {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.select().from(settings);
+}
+
+export async function updateSetting(key: string, value: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const existing = await getSetting(key);
+  if (existing) {
+    return await db.update(settings).set({ value }).where(eq(settings.key, key));
+  } else {
+    return await db.insert(settings).values({ key, value, type: "string" });
+  }
+}
+
+export async function deleteSetting(key: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.delete(settings).where(eq(settings.key, key));
 }

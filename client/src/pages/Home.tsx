@@ -2,8 +2,9 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Phone, MapPin, Mail, Printer, BookOpen, Palette, FileText, Zap, Award, Users, MessageCircle, Image } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
 
 export default function Home() {
   // The userAuth hooks provides authentication state
@@ -11,6 +12,17 @@ export default function Home() {
   let { user, loading, error, isAuthenticated, logout } = useAuth();
 
   const [, navigate] = useLocation();
+  const settingsQuery = trpc.settings.list.useQuery();
+
+  const logoUrl = useMemo(() => {
+    const logoSetting = settingsQuery.data?.find(s => s.key === 'logo');
+    return logoSetting?.value || null;
+  }, [settingsQuery.data]);
+
+  const phoneNumber = useMemo(() => {
+    const phoneSetting = settingsQuery.data?.find(s => s.key === 'phone');
+    return phoneSetting?.value || '213669292026';
+  }, [settingsQuery.data]);
 
   const handleOrderClick = () => {
     navigate("/order");
@@ -18,7 +30,7 @@ export default function Home() {
 
   const handleWhatsAppClick = (service: string) => {
     const message = `مرحباً، أنا مهتم بخدمة: ${service}. هل يمكنكم تقديم عرض سعر؟`;
-    const whatsappLink = `https://wa.me/213669292026?text=${encodeURIComponent(message)}`;
+    const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappLink, "_blank");
   };
 
@@ -28,9 +40,17 @@ export default function Home() {
       <nav className="sticky top-0 z-50 bg-white border-b border-[#E8E4DB] shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-[#B87333] rounded-lg flex items-center justify-center">
-              <Printer className="w-6 h-6 text-white" />
-            </div>
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="PrintArt Logo"
+                className="w-10 h-10 rounded-lg object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-[#B87333] rounded-lg flex items-center justify-center">
+                <Printer className="w-6 h-6 text-white" />
+              </div>
+            )}
             <h1 className="text-2xl font-bold copper-text">PrintArt</h1>
           </div>
           <div className="hidden md:flex gap-8 items-center">

@@ -3,18 +3,19 @@ import { Card } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, Star } from "lucide-react";
 import { useLocation } from "wouter";
+import { useState, useMemo } from "react";
 
 export default function Portfolio() {
   const [, navigate] = useLocation();
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const portfolioQuery = trpc.portfolio.list.useQuery();
+  const categoriesQuery = trpc.categories.list.useQuery();
 
-  const categories = [
-    { id: "all", label: "جميع الأعمال" },
-    { id: "thesis", label: "مذكرات التخرج" },
-    { id: "design", label: "التصميم" },
-    { id: "cv", label: "السيرة الذاتية" },
-    { id: "cards", label: "كروت الأعمال" },
-  ];
+  const filteredWorks = useMemo(() => {
+    if (!portfolioQuery.data) return [];
+    if (!selectedCategoryId) return portfolioQuery.data;
+    return portfolioQuery.data.filter(work => work.categoryId === selectedCategoryId);
+  }, [portfolioQuery.data, selectedCategoryId]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -53,6 +54,39 @@ export default function Portfolio() {
         </div>
       </section>
 
+      {/* Category Filter */}
+      {categoriesQuery.data && categoriesQuery.data.length > 0 && (
+        <section className="py-8 bg-[#F5F1E8]">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-wrap gap-3 justify-center">
+              <button
+                onClick={() => setSelectedCategoryId(null)}
+                className={`px-4 py-2 rounded-full transition-smooth ${
+                  selectedCategoryId === null
+                    ? "bg-[#B87333] text-white"
+                    : "bg-white text-[#1a1a1a] border border-[#E8E4DB] hover:border-[#B87333]"
+                }`}
+              >
+                جميع الأعمال
+              </button>
+              {categoriesQuery.data.map(category => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategoryId(category.id)}
+                  className={`px-4 py-2 rounded-full transition-smooth ${
+                    selectedCategoryId === category.id
+                      ? "bg-[#B87333] text-white"
+                      : "bg-white text-[#1a1a1a] border border-[#E8E4DB] hover:border-[#B87333]"
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Portfolio Grid */}
       <section id="portfolio" className="py-16">
         <div className="container mx-auto px-4">
@@ -60,9 +94,9 @@ export default function Portfolio() {
             <div className="text-center py-12">
               <p className="text-[#8B8680]">جاري تحميل الأعمال...</p>
             </div>
-          ) : portfolioQuery.data && portfolioQuery.data.length > 0 ? (
+          ) : filteredWorks && filteredWorks.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {portfolioQuery.data.map((work) => (
+              {filteredWorks.map((work) => (
                 <Card key={work.id} className="overflow-hidden hover:shadow-xl transition-smooth group cursor-pointer">
                   {/* Image */}
                   <div className="relative h-64 overflow-hidden bg-gray-100">
@@ -79,7 +113,7 @@ export default function Portfolio() {
                     {/* Category Badge */}
                     <div className="inline-block mb-3">
                       <span className="px-3 py-1 bg-[#B87333]/10 text-[#B87333] text-sm font-medium rounded-full">
-                        {work.category}
+                        {categoriesQuery.data?.find(c => c.id === work.categoryId)?.name || "بدون فئة"}
                       </span>
                     </div>
 

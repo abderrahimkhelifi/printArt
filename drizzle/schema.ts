@@ -48,13 +48,25 @@ export const orders = mysqlTable("orders", {
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = typeof orders.$inferInsert;
 
+// Categories table
+export const categories = mysqlTable("categories", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Category = typeof categories.$inferSelect;
+export type InsertCategory = typeof categories.$inferInsert;
+
 // Portfolio/Works table
 export const portfolioWorks = mysqlTable("portfolioWorks", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   imageUrl: text("imageUrl").notNull(),
-  category: varchar("category", { length: 100 }).notNull(),
+  categoryId: int("categoryId").notNull(),
   price: int("price"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -62,6 +74,19 @@ export const portfolioWorks = mysqlTable("portfolioWorks", {
 
 export type PortfolioWork = typeof portfolioWorks.$inferSelect;
 export type InsertPortfolioWork = typeof portfolioWorks.$inferInsert;
+
+// Settings table
+export const settings = mysqlTable("settings", {
+  id: int("id").autoincrement().primaryKey(),
+  key: varchar("key", { length: 255 }).notNull().unique(),
+  value: text("value").notNull(),
+  type: varchar("type", { length: 50 }).default("string").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Setting = typeof settings.$inferSelect;
+export type InsertSetting = typeof settings.$inferInsert;
 
 // Services table
 export const services = mysqlTable("services", {

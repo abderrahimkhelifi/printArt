@@ -118,14 +118,16 @@ export const appRouter = router({
         title: z.string().min(1),
         description: z.string().optional(),
         imageUrl: z.string().min(1),
-        category: z.string().min(1),
+        categoryId: z.number().min(1),
+        price: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
         return await db.createPortfolioWork({
           title: input.title,
           description: input.description,
           imageUrl: input.imageUrl,
-          category: input.category,
+          categoryId: input.categoryId,
+          price: input.price,
         });
       }),
 
@@ -143,11 +145,12 @@ export const appRouter = router({
         title: z.string().optional(),
         description: z.string().optional(),
         imageUrl: z.string().optional(),
-        category: z.string().optional(),
+        categoryId: z.number().optional(),
         price: z.number().optional(),
       }))
       .mutation(async ({ input }) => {
-        return await db.updatePortfolioWork(input.id, input);
+        const { id, ...data } = input;
+        return await db.updatePortfolioWork(id, data);
       }),
   }),
 
@@ -208,6 +211,78 @@ export const appRouter = router({
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
         return await db.markNotificationAsRead(input.id);
+      }),
+  }),
+
+  // Categories Router
+  categories: router({
+    // Get all categories (public)
+    list: publicProcedure.query(async () => {
+      return await db.getCategories();
+    }),
+
+    // Create category (admin only)
+    create: adminProcedure
+      .input(z.object({
+        name: z.string().min(1),
+        description: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createCategory({
+          name: input.name,
+          description: input.description,
+        });
+      }),
+
+    // Update category (admin only)
+    update: adminProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        return await db.updateCategory(id, data);
+      }),
+
+    // Delete category (admin only)
+    delete: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        return await db.deleteCategory(input.id);
+      }),
+  }),
+
+  // Settings Router
+  settings: router({
+    // Get all settings (admin only)
+    list: adminProcedure.query(async () => {
+      return await db.getAllSettings();
+    }),
+
+    // Get single setting (public for frontend display)
+    get: publicProcedure
+      .input(z.object({ key: z.string() }))
+      .query(async ({ input }) => {
+        return await db.getSetting(input.key);
+      }),
+
+    // Update setting (admin only)
+    update: adminProcedure
+      .input(z.object({
+        key: z.string().min(1),
+        value: z.string().min(1),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.updateSetting(input.key, input.value);
+      }),
+
+    // Delete setting (admin only)
+    delete: adminProcedure
+      .input(z.object({ key: z.string() }))
+      .mutation(async ({ input }) => {
+        return await db.deleteSetting(input.key);
       }),
   }),
 });

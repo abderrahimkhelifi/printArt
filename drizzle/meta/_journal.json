@@ -29,6 +29,13 @@
       "when": 1777418330050,
       "tag": "0003_bent_scarlet_spider",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1777591526309,
+      "tag": "0004_brief_talisman",
+      "breakpoints": true
     }
   ]
 }

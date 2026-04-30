@@ -41,7 +41,7 @@ export default function AdminDashboard() {
     title: "",
     description: "",
     imageUrl: "",
-    category: "",
+    categoryId: 0,
     price: 0,
   });
 
@@ -51,12 +51,34 @@ export default function AdminDashboard() {
     basePrice: 0,
   });
 
+  const [categoryForm, setCategoryForm] = useState({
+    name: "",
+    description: "",
+  });
+
+  const [settingsForm, setSettingsForm] = useState<Record<string, string>>({
+    phone: "",
+    address: "",
+    facebook: "",
+    instagram: "",
+    whatsapp: "",
+    logo: "",
+  });
+
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
+  const [editingCategoryForm, setEditingCategoryForm] = useState({
+    name: "",
+    description: "",
+  });
+
   const [orderUpdateForm, setOrderUpdateForm] = useState<any>({
     status: "",
     progress: 0,
     estimatedPrice: 0,
     adminNotes: "",
   });
+
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
   // Check admin authentication
   useEffect(() => {
@@ -78,6 +100,12 @@ export default function AdminDashboard() {
   const servicesQuery = trpc.services.list.useQuery(undefined, {
     enabled: isAuthenticated,
   });
+  const categoriesQuery = trpc.categories.list.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
+  const settingsQuery = trpc.settings.list.useQuery(undefined, {
+    enabled: isAuthenticated,
+  });
 
   // Mutations
   const updateOrderMutation = trpc.orders.updateStatus.useMutation({
@@ -96,7 +124,7 @@ export default function AdminDashboard() {
         title: "",
         description: "",
         imageUrl: "",
-        category: "",
+        categoryId: 0,
         price: 0,
       });
     },
@@ -123,6 +151,55 @@ export default function AdminDashboard() {
       servicesQuery.refetch();
     },
   });
+
+  const createCategoryMutation = trpc.categories.create.useMutation({
+    onSuccess: () => {
+      toast.success("تم إضافة الفئة بنجاح");
+      categoriesQuery.refetch();
+      setCategoryForm({ name: "", description: "" });
+    },
+  });
+
+  const deleteCategoryMutation = trpc.categories.delete.useMutation({
+    onSuccess: () => {
+      toast.success("تم حذف الفئة بنجاح");
+      categoriesQuery.refetch();
+    },
+  });
+
+  const updateSettingMutation = trpc.settings.update.useMutation({
+    onSuccess: () => {
+      toast.success("تم تحديث الإعدادات بنجاح");
+      settingsQuery.refetch();
+    },
+  });
+
+  const updateCategoryMutation = trpc.categories.update.useMutation({
+    onSuccess: () => {
+      toast.success("تم تحديث الفئة بنجاح");
+      categoriesQuery.refetch();
+      setEditingCategoryId(null);
+    },
+  });
+
+  // Load settings on mount
+  useEffect(() => {
+    if (settingsQuery.data) {
+      const newSettings: Record<string, string> = {
+        phone: "",
+        address: "",
+        facebook: "",
+        instagram: "",
+        whatsapp: "",
+        logo: "",
+      };
+      settingsQuery.data.forEach((setting) => {
+        newSettings[setting.key] = setting.value;
+      });
+      setSettingsForm(newSettings);
+      setIsLoadingSettings(false);
+    }
+  }, [settingsQuery.data]);
 
   const handleLogout = () => {
     localStorage.removeItem("adminSession");
@@ -201,10 +278,12 @@ export default function AdminDashboard() {
         </div>
 
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="orders">الطلبات</TabsTrigger>
             <TabsTrigger value="portfolio">الأعمال</TabsTrigger>
             <TabsTrigger value="services">الخدمات</TabsTrigger>
+            <TabsTrigger value="categories">الفئات</TabsTrigger>
+            <TabsTrigger value="settings">الإعدادات</TabsTrigger>
           </TabsList>
 
           {/* Orders Tab */}
@@ -440,16 +519,26 @@ export default function AdminDashboard() {
                       })
                     }
                   />
-                  <Input
-                    placeholder="الفئة"
-                    value={portfolioForm.category}
-                    onChange={(e) =>
+                  <Select
+                    value={portfolioForm.categoryId.toString()}
+                    onValueChange={(value) =>
                       setPortfolioForm({
                         ...portfolioForm,
-                        category: e.target.value,
+                        categoryId: parseInt(value),
                       })
                     }
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر فئة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categoriesQuery.data?.map((category) => (
+                        <SelectItem key={category.id} value={category.id.toString()}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Input
                     type="number"
                     placeholder="السعر (دج)"
@@ -463,11 +552,16 @@ export default function AdminDashboard() {
                   />
                   <Button
                     onClick={() => {
+                      if (portfolioForm.categoryId === 0) {
+                        toast.error("الرجاء اختيار فئة");
+                        return;
+                      }
                       createPortfolioMutation.mutate({
                         title: portfolioForm.title,
                         description: portfolioForm.description,
                         imageUrl: portfolioForm.imageUrl,
-                        category: portfolioForm.category,
+                        categoryId: portfolioForm.categoryId,
+                        price: portfolioForm.price,
                       });
                     }}
                     className="w-full"
@@ -613,6 +707,261 @@ export default function AdminDashboard() {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          {/* Categories Tab */}
+          <TabsContent value="categories" className="space-y-4">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  إضافة فئة جديدة
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>إضافة فئة جديدة</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <Input
+                    placeholder="اسم الفئة"
+                    value={categoryForm.name}
+                    onChange={(e) =>
+                      setCategoryForm({
+                        ...categoryForm,
+                        name: e.target.value,
+                      })
+                    }
+                  />
+                  <Textarea
+                    placeholder="وصف الفئة (اختياري)"
+                    value={categoryForm.description}
+                    onChange={(e) =>
+                      setCategoryForm({
+                        ...categoryForm,
+                        description: e.target.value,
+                      })
+                    }
+                  />
+                  <Button
+                    onClick={() => {
+                      if (!categoryForm.name.trim()) {
+                        toast.error("الرجاء إدخال اسم الفئة");
+                        return;
+                      }
+                      createCategoryMutation.mutate({
+                        name: categoryForm.name,
+                        description: categoryForm.description,
+                      });
+                    }}
+                    className="w-full"
+                  >
+                    إضافة
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <div className="grid gap-4">
+              {categoriesQuery.data?.map((category: any) => (
+                <Card key={category.id} className="p-6">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg">{category.name}</h3>
+                      {category.description && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          {category.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <Dialog open={editingCategoryId === category.id} onOpenChange={(open) => {
+                        if (!open) setEditingCategoryId(null);
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEditingCategoryId(category.id);
+                              setEditingCategoryForm({
+                                name: category.name,
+                                description: category.description || "",
+                              });
+                            }}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>تعديل الفئة</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <Input
+                              placeholder="اسم الفئة"
+                              value={editingCategoryForm.name}
+                              onChange={(e) =>
+                                setEditingCategoryForm({
+                                  ...editingCategoryForm,
+                                  name: e.target.value,
+                                })
+                              }
+                            />
+                            <Textarea
+                              placeholder="وصف الفئة (اختياري)"
+                              value={editingCategoryForm.description}
+                              onChange={(e) =>
+                                setEditingCategoryForm({
+                                  ...editingCategoryForm,
+                                  description: e.target.value,
+                                })
+                              }
+                            />
+                            <Button
+                              onClick={() => {
+                                if (!editingCategoryForm.name.trim()) {
+                                  toast.error("الرجاء إدخال اسم الفئة");
+                                  return;
+                                }
+                                updateCategoryMutation.mutate({
+                                  id: editingCategoryId!,
+                                  name: editingCategoryForm.name,
+                                  description: editingCategoryForm.description,
+                                });
+                              }}
+                              className="w-full"
+                            >
+                              حفظ التغييرات
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          deleteCategoryMutation.mutate({ id: category.id })
+                        }
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="space-y-4">
+            {isLoadingSettings ? (
+              <div className="text-center py-12">
+                <p className="text-gray-600">جاري تحميل الإعدادات...</p>
+              </div>
+            ) : (
+              <Card className="p-6 space-y-6">
+                <div>
+                  <label className="text-sm font-medium block mb-2">رقم الهاتف</label>
+                  <Input
+                    placeholder="رقم الهاتف"
+                    value={settingsForm.phone}
+                    onChange={(e) =>
+                      setSettingsForm({
+                        ...settingsForm,
+                        phone: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium block mb-2">العنوان</label>
+                  <Textarea
+                    placeholder="العنوان الكامل"
+                    value={settingsForm.address}
+                    onChange={(e) =>
+                      setSettingsForm({
+                        ...settingsForm,
+                        address: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium block mb-2">رابط Facebook</label>
+                  <Input
+                    placeholder="https://facebook.com/..."
+                    value={settingsForm.facebook}
+                    onChange={(e) =>
+                      setSettingsForm({
+                        ...settingsForm,
+                        facebook: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium block mb-2">رابط Instagram</label>
+                  <Input
+                    placeholder="https://instagram.com/..."
+                    value={settingsForm.instagram}
+                    onChange={(e) =>
+                      setSettingsForm({
+                        ...settingsForm,
+                        instagram: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium block mb-2">رابط WhatsApp</label>
+                  <Input
+                    placeholder="رقم الهاتف للواتساب"
+                    value={settingsForm.whatsapp}
+                    onChange={(e) =>
+                      setSettingsForm({
+                        ...settingsForm,
+                        whatsapp: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium block mb-2">رابط اللوغو</label>
+                  <Input
+                    placeholder="رابط صورة اللوغو"
+                    value={settingsForm.logo}
+                    onChange={(e) =>
+                      setSettingsForm({
+                        ...settingsForm,
+                        logo: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <Button
+                  onClick={() => {
+                    Object.entries(settingsForm).forEach(([key, value]) => {
+                      if (value.trim()) {
+                        updateSettingMutation.mutate({
+                          key,
+                          value,
+                        });
+                      }
+                    });
+                  }}
+                  className="w-full"
+                >
+                  حفظ الإعدادات
+                </Button>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </div>
