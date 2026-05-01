@@ -23,7 +23,11 @@ function Router() {
       <Route path={"/order"} component={OrderForm} />
       <Route path={"/portfolio"} component={Portfolio} />
       <Route path={"/admin-login"} component={AdminLoginPage} />
-      <Route path={"/admin"} component={AdminDashboard} />
+      <Route path={"/admin"}>
+        <ProtectedRoute>
+          <AdminDashboard />
+        </ProtectedRoute>
+      </Route>
       <Route path={"/admin/services"}>
         <ProtectedRoute>
           <AdminServices />

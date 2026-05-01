@@ -54,20 +54,22 @@ export default function Home() {
             <h1 className="text-2xl font-bold copper-text">PrintArt</h1>
           </div>
           <div className="hidden md:flex gap-8 items-center">
-            <a href="/services" className="text-[#1a1a1a] hover:copper-text transition-smooth">الخدمات</a>
-            <a href="#about" className="text-[#1a1a1a] hover:copper-text transition-smooth">عن المكتبة</a>
-            <a href="#contact" className="text-[#1a1a1a] hover:copper-text transition-smooth">التواصل</a>
+            <a href="#services" onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' });
+            }} className="text-[#1a1a1a] hover:copper-text transition-smooth">الخدمات</a>
+            <a href="#about" onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' });
+            }} className="text-[#1a1a1a] hover:copper-text transition-smooth">عن المكتبة</a>
+            <a href="/portfolio" className="text-[#1a1a1a] hover:copper-text transition-smooth">معرض الأعمال</a>
+            <a href="#contact" onClick={(e) => {
+              e.preventDefault();
+              document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+            }} className="text-[#1a1a1a] hover:copper-text transition-smooth">التواصل</a>
             <Button 
               variant="ghost" 
-              onClick={() => navigate("/portfolio")}
-              className="text-[#1a1a1a] hover:copper-text"
-            >
-              <Image className="w-4 h-4 mr-2" />
-              معرض الأعمال
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate("/admin/services")}
+              onClick={() => navigate("/admin-login")}
               className="text-[#B87333] hover:copper-text font-semibold"
             >
               لوحة التحكم

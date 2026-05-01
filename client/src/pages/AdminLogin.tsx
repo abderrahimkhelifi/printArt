@@ -22,11 +22,8 @@ export default function AdminLogin() {
     const ADMIN_PASSWORD = "Tadjeddine08";
 
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      // Store admin session in localStorage
-      localStorage.setItem("adminSession", JSON.stringify({
-        email: ADMIN_EMAIL,
-        loginTime: new Date().toISOString(),
-      }));
+      // Store admin token in localStorage
+      localStorage.setItem("adminToken", "admin-token-" + Date.now());
       
       toast.success("تم تسجيل الدخول بنجاح!");
       setTimeout(() => {

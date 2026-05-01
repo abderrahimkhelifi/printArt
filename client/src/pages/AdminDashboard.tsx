@@ -82,8 +82,8 @@ export default function AdminDashboard() {
 
   // Check admin authentication
   useEffect(() => {
-    const adminSession = localStorage.getItem("adminSession");
-    if (!adminSession) {
+    const adminToken = localStorage.getItem("adminToken");
+    if (!adminToken) {
       navigate("/admin-login");
     } else {
       setIsAuthenticated(true);
@@ -202,7 +202,7 @@ export default function AdminDashboard() {
   }, [settingsQuery.data]);
 
   const handleLogout = () => {
-    localStorage.removeItem("adminSession");
+    localStorage.removeItem("adminToken");
     toast.success("تم تسجيل الخروج");
     navigate("/");
   };
