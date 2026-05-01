@@ -2,17 +2,32 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
+import { lazy, Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import OrderForm from "./pages/OrderForm";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminLogin from "./pages/AdminLogin";
-import AdminLoginPage from "./pages/AdminLoginPage";
 import Portfolio from "./pages/Portfolio";
 import Services from "./pages/Services";
-import AdminServices from "./pages/AdminServices";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { Loader2 } from "lucide-react";
+
+// Lazy load admin pages for better performance
+const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminServices = lazy(() => import("./pages/AdminServices"));
+
+// Loading component
+function LoadingSpinner() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f5f0e8]">
+      <div className="flex flex-col items-center gap-4">
+        <Loader2 className="w-8 h-8 animate-spin text-[#B87333]" />
+        <p className="text-gray-600">جاري التحميل...</p>
+      </div>
+    </div>
+  );
+}
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -22,16 +37,24 @@ function Router() {
       <Route path={"/services"} component={Services} />
       <Route path={"/order"} component={OrderForm} />
       <Route path={"/portfolio"} component={Portfolio} />
-      <Route path={"/admin-login"} component={AdminLoginPage} />
+      <Route path={"/admin-login"}>
+        <Suspense fallback={<LoadingSpinner />}>
+          <AdminLoginPage />
+        </Suspense>
+      </Route>
       <Route path={"/admin"}>
-        <ProtectedRoute>
-          <AdminDashboard />
-        </ProtectedRoute>
+        <Suspense fallback={<LoadingSpinner />}>
+          <ProtectedRoute>
+            <AdminDashboard />
+          </ProtectedRoute>
+        </Suspense>
       </Route>
       <Route path={"/admin/services"}>
-        <ProtectedRoute>
-          <AdminServices />
-        </ProtectedRoute>
+        <Suspense fallback={<LoadingSpinner />}>
+          <ProtectedRoute>
+            <AdminServices />
+          </ProtectedRoute>
+        </Suspense>
       </Route>
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

@@ -2,6 +2,9 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { ENV } from "./_core/env";
 
+// Bcrypt hash for 'Tadjeddine08'
+const ADMIN_PASSWORD_HASH = "$2b$10$gY2HsI3NfCsmc0SGlPYIYeCbvnO0fYscotFjIa.d7XB4Wa/exPtBO";
+
 export interface AdminToken {
   isAdmin: boolean;
   iat: number;
@@ -21,16 +24,9 @@ export async function verifyAdminCredentials(
     return false;
   }
   
-  // مقارنة كلمة المرور - إذا كانت كلمة المرور في الـ ENV غير مشفرة، نقارنها مباشرة
+  // مقارنة كلمة المرور باستخدام bcrypt فقط
   try {
-    // محاولة المقارنة المباشرة أولاً (في حالة أن كلمة المرور في الـ ENV غير مشفرة)
-    if (password === ENV.adminPassword) {
-      console.log("[Auth] Password matched directly");
-      return true;
-    }
-    
-    // إذا لم تتطابق، جرب bcrypt (في حالة أن كلمة المرور في الـ ENV مشفرة)
-    const isPasswordValid = await bcryptjs.compare(password, ENV.adminPassword);
+    const isPasswordValid = await bcryptjs.compare(password, ADMIN_PASSWORD_HASH);
     console.log("[Auth] Bcrypt comparison result:", isPasswordValid);
     return isPasswordValid;
   } catch (error) {

@@ -43,17 +43,22 @@ async function startServer() {
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
   }));
+  // CORS configuration - restrict to specific domain
+  const allowedOrigin = process.env.NODE_ENV === "production" 
+    ? "https://printart-hw8lhfdz.manus.space"
+    : "*";
+  
   app.use(cors({
-    origin: "*",
-    credentials: false,
+    origin: allowedOrigin,
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }));
   app.options("*", cors());
   
-  // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  // Configure body parser with 5mb limit for security
+  app.use(express.json({ limit: "5mb" }));
+  app.use(express.urlencoded({ limit: "5mb", extended: true }));
   
   // Serve uploaded files
   app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
