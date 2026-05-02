@@ -210,7 +210,7 @@ export const appRouter = router({
     markAsRead: adminProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
-        return await db.markNotificationAsRead(input.id);
+        return await db.markOrderAsRead(input.id);
       }),
   }),
 

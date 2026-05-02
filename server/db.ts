@@ -127,6 +127,14 @@ export async function updateOrderStatus(id: number, status?: string, adminNotes?
   return await db.update(orders).set(updateData).where(eq(orders.id, id));
 }
 
+// Mark order as read
+export async function markOrderAsRead(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  return await db.update(orders).set({ isRead: 1 }).where(eq(orders.id, id));
+}
+
 // Portfolio Works queries
 export async function createPortfolioWork(work: InsertPortfolioWork) {
   const db = await getDb();
