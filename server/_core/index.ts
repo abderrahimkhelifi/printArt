@@ -10,6 +10,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import servicesRouter from "../routes/services";
 import authRouter from "../routes/auth";
+import uploadRouter from "../routes/upload";
 import { verifyTokenMiddleware } from "../middleware/auth";
 import path from "path";
 import helmet from "helmet";
@@ -76,6 +77,9 @@ async function startServer() {
   
   // Services API routes
   app.use("/api/services", servicesRouter);
+  
+  // Upload API routes
+  app.use("/api", uploadRouter);
   // tRPC API
   app.use(
     "/api/trpc",
