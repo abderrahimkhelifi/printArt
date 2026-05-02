@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
       toast.success("تم تسجيل الدخول بنجاح!");
       
       // إعادة التوجيه إلى لوحة التحكم
-      navigate("/admin/services");
+      navigate("/admin");
     } catch (error) {
       console.error("Login error:", error);
       toast.error("حدث خطأ أثناء تسجيل الدخول");

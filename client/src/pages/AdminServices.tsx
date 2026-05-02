@@ -116,9 +116,13 @@ export default function AdminServices() {
       const url = editingId ? `/api/services/${editingId}` : "/api/services";
       const method = editingId ? "PUT" : "POST";
 
+      const token = localStorage.getItem("adminToken");
       const response = await fetch(url, {
         method,
         body: data,
+        headers: {
+          "Authorization": "Bearer " + (token || ""),
+        },
       });
 
       if (!response.ok) {
@@ -162,8 +166,12 @@ export default function AdminServices() {
     }
 
     try {
+      const token = localStorage.getItem("adminToken");
       const response = await fetch(`/api/services/${id}`, {
         method: "DELETE",
+        headers: {
+          "Authorization": "Bearer " + (token || ""),
+        },
       });
 
       if (!response.ok) {
