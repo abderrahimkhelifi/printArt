@@ -308,7 +308,12 @@ export default function AdminDashboard() {
                 <Card key={order.id} className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="font-bold text-lg">{order.clientName}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-lg">{order.clientName}</h3>
+                        {!order.isRead && (
+                          <span className="px-2 py-1 bg-red-500 text-white text-xs rounded-full font-medium">جديد</span>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-600">
                         {order.clientEmail}
                       </p>
@@ -370,6 +375,17 @@ export default function AdminDashboard() {
                       <strong>ملاحظات:</strong> {order.adminNotes}
                     </p>
                   )}
+
+                  <div className="flex gap-2 mb-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        navigate(`/admin/orders/${order.id}`);
+                      }}
+                    >
+                      عرض الطلب
+                    </Button>
+                  </div>
 
                   <Dialog open={selectedOrder?.id === order.id} onOpenChange={(open) => {
                     if (!open) setSelectedOrder(null);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useRoute } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FileIcon, ImageIcon, Download, X } from "lucide-react";
@@ -11,6 +11,7 @@ interface OrderFile {
 }
 
 export default function ViewOrder() {
+  const [, navigate] = useLocation();
   const [route, params] = useRoute("/admin/orders/:id");
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);

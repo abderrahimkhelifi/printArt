@@ -16,6 +16,7 @@ import { Loader2 } from "lucide-react";
 const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminServices = lazy(() => import("./pages/AdminServices"));
+const ViewOrder = lazy(() => import("./pages/ViewOrder"));
 
 // Loading component
 function LoadingSpinner() {
@@ -53,6 +54,13 @@ function Router() {
         <Suspense fallback={<LoadingSpinner />}>
           <ProtectedRoute>
             <AdminServices />
+          </ProtectedRoute>
+        </Suspense>
+      </Route>
+      <Route path={"/admin/orders/:id"}>
+        <Suspense fallback={<LoadingSpinner />}>
+          <ProtectedRoute>
+            <ViewOrder />
           </ProtectedRoute>
         </Suspense>
       </Route>
