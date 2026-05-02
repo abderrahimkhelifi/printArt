@@ -113,14 +113,16 @@ export async function getOrderById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function updateOrderStatus(id: number, status: string, adminNotes?: string, progress?: number, estimatedPrice?: number) {
+export async function updateOrderStatus(id: number, status?: string, adminNotes?: string, progress?: number, estimatedPrice?: number, isRead?: boolean) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const updateData: Record<string, unknown> = { status };
+  const updateData: Record<string, unknown> = {};
+  if (status !== undefined) updateData.status = status;
   if (adminNotes !== undefined) updateData.adminNotes = adminNotes;
   if (progress !== undefined) updateData.progress = progress;
   if (estimatedPrice !== undefined) updateData.estimatedPrice = estimatedPrice;
+  if (isRead !== undefined) updateData.isRead = isRead;
   
   return await db.update(orders).set(updateData).where(eq(orders.id, id));
 }

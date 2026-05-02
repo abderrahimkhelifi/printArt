@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { MessageCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,8 @@ export default function AdminDashboard() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
   // Form states
+  const [portfolioImage, setPortfolioImage] = useState<File | null>(null);
+  const [portfolioImagePreview, setPortfolioImagePreview] = useState<string>("");
   const [portfolioForm, setPortfolioForm] = useState({
     title: "",
     description: "",
@@ -115,6 +118,18 @@ export default function AdminDashboard() {
       setSelectedOrder(null);
     },
   });
+
+  const handlePortfolioImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPortfolioImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPortfolioImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const createPortfolioMutation = trpc.portfolio.create.useMutation({
     onSuccess: () => {
@@ -314,7 +329,17 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <p className="text-gray-600">رقم الهاتف</p>
-                      <p className="font-medium">{order.clientPhone}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{order.clientPhone}</p>
+                        <a
+                          href={`https://wa.me/${order.clientPhone.replace(/[^0-9]/g, '')}?text=أهلاً بك، نحن بصدد معالجة طلبك بخصوص ${order.serviceType} في مكتبة PrintArt...`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-green-500 hover:text-green-700"
+                        >
+                          <MessageCircle size={20} />
+                        </a>
+                      </div>
                     </div>
                     <div>
                       <p className="text-gray-600">نسبة التقدم</p>
@@ -510,15 +535,13 @@ export default function AdminDashboard() {
                     }
                   />
                   <Input
-                    placeholder="رابط الصورة"
-                    value={portfolioForm.imageUrl}
-                    onChange={(e) =>
-                      setPortfolioForm({
-                        ...portfolioForm,
-                        imageUrl: e.target.value,
-                      })
-                    }
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePortfolioImageChange}
                   />
+                  {portfolioImagePreview && (
+                    <img src={portfolioImagePreview} alt="معاينة" className="w-full h-40 object-cover rounded" />
+                  )}
                   <Select
                     value={portfolioForm.categoryId.toString()}
                     onValueChange={(value) =>
