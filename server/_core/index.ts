@@ -15,6 +15,7 @@ import { verifyTokenMiddleware } from "../middleware/auth";
 import path from "path";
 import helmet from "helmet";
 import cors from "cors";
+import { scheduleCleanup } from "../cleanup";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -118,6 +119,8 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    // بدء مهمة التنظيف التلقائي
+    scheduleCleanup();
   });
 }
 

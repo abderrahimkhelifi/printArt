@@ -459,6 +459,29 @@ export default function Home() {
                   <p>الجمعة: مغلق</p>
                 </div>
               </div>
+
+              {/* Google Maps */}
+              <div className="mt-12">
+                <h3 className="font-bold text-[#1a1a1a] mb-4">موقعنا على الخريطة</h3>
+                <a
+                  href="https://maps.app.goo.gl/FchoRT8zhxfb23Qx7"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3389.8097858741147!2d-1.6394!3d31.6295!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd7a5c5c5c5c5c5c5%3A0x5c5c5c5c5c5c5c5c!2sPrintArt!5e0!3m2!1sar!2sdz!4v1234567890"
+                    width="100%"
+                    height="300"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="w-full"
+                  />
+                </a>
+                <p className="text-sm text-[#8B8680] mt-3 text-center">اضغط على الخريطة لفتح الموقع في Google Maps</p>
+              </div>
             </div>
 
             {/* Contact Form */}
@@ -560,7 +583,7 @@ export default function Home() {
           </div>
 
           <div className="border-t border-gray-700 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 PrintArt. جميع الحقوق محفوظة.</p>
+            <p>&copy; 2026 PrintArt. جميع الحقوق محفوظة.</p>
           </div>
         </div>
       </footer>

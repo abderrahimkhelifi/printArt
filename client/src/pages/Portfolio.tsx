@@ -182,7 +182,7 @@ export default function Portfolio() {
       {/* Footer */}
       <footer className="bg-[#1a1a1a] text-white py-8">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-400">© 2024 PrintArt. جميع الحقوق محفوظة.</p>
+          <p className="text-gray-400">© 2026 PrintArt. جميع الحقوق محفوظة.</p>
         </div>
       </footer>
     </div>
