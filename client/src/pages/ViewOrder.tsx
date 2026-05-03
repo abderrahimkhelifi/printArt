@@ -33,6 +33,9 @@ export default function ViewOrder() {
         updateOrderMutation.mutate({
           id: getOrderQuery.data.id,
           status: getOrderQuery.data.status,
+          progress: getOrderQuery.data.progress,
+          estimatedPrice: getOrderQuery.data.estimatedPrice,
+          adminNotes: getOrderQuery.data.adminNotes,
         });
       }
     }
