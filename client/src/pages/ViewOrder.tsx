@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { FileIcon, ImageIcon, Download, ArrowRight } from "lucide-react";
+import { Download, ArrowRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 export default function ViewOrder() {
@@ -10,6 +10,7 @@ export default function ViewOrder() {
   const [route, params] = useRoute("/admin/orders/:id");
   const [order, setOrder] = useState<any>(null);
   const orderId = params?.id;
+  const utils = trpc.useUtils();
 
   // استخدام trpc للحصول على بيانات الطلب
   const getOrderQuery = trpc.orders.getById.useQuery(
@@ -22,6 +23,8 @@ export default function ViewOrder() {
     onSuccess: () => {
       // إعادة تحميل بيانات الطلب بعد التحديث
       getOrderQuery.refetch();
+      // تحديث بيانات الطلبات في AdminDashboard
+      utils.orders.list.invalidate();
     },
   });
 
