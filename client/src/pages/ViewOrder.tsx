@@ -18,12 +18,14 @@ export default function ViewOrder() {
     { enabled: !!orderId }
   );
 
-  // استخدام trpc لتحديث الحالة (مع تحديث isRead)
-  const updateOrderMutation = trpc.orders.updateStatus.useMutation({
+  // استخدام trpc لتحديث isRead
+  const markAsReadMutation = trpc.orders.markAsRead.useMutation({
     onSuccess: () => {
-      // إعادة تحميل بيانات الطلب بعد التحديث
-      getOrderQuery.refetch();
-      // تحديث بيانات الطلبات في AdminDashboard
+      // تحديث بيانات الطلب المحلية
+      if (getOrderQuery.data) {
+        setOrder({ ...getOrderQuery.data, isRead: 1 });
+      }
+      // تحديث بيانات الطلبات في AdminDashboard (لإزالة الجرس)
       utils.orders.list.invalidate();
     },
   });
@@ -33,12 +35,8 @@ export default function ViewOrder() {
       setOrder(getOrderQuery.data);
       // تحديث isRead عند فتح الطلب إذا لم يكن مقروءاً
       if (!getOrderQuery.data.isRead) {
-        updateOrderMutation.mutate({
+        markAsReadMutation.mutate({
           id: getOrderQuery.data.id,
-          status: getOrderQuery.data.status,
-          progress: getOrderQuery.data.progress || 0,
-          estimatedPrice: getOrderQuery.data.estimatedPrice || undefined,
-          adminNotes: getOrderQuery.data.adminNotes || undefined,
         });
       }
     }

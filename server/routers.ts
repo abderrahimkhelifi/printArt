@@ -100,12 +100,18 @@ export const appRouter = router({
           content: `تم تحديث حالة الطلب إلى: ${statusLabels[input.status]}`,
           orderId: input.id,
         });
-
         return result;
+      }),
+
+    // Mark order as read (admin only)
+    markAsRead: adminProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        return await db.markOrderAsRead(input.id);
       }),
   }),
 
-  // Portfolio Works Router
+  // Categories Router
   portfolio: router({
     // Get all portfolio works (public)
     list: publicProcedure.query(async () => {
