@@ -28,6 +28,7 @@ import {
   Trash2,
   Plus,
   LogOut,
+  Bell,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -311,7 +312,7 @@ export default function AdminDashboard() {
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-lg">{order.clientName}</h3>
                         {!order.isRead && (
-                          <span className="px-2 py-1 bg-red-500 text-white text-xs rounded-full font-medium">جديد</span>
+                          <Bell className="w-5 h-5 text-yellow-500" />
                         )}
                       </div>
                       <p className="text-sm text-gray-600">
