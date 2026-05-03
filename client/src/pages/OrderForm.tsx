@@ -136,8 +136,8 @@ export default function OrderForm() {
 
         if (response.ok) {
           const data = await response.json();
-          fileUrl = data.url;
-          fileName = file.name;
+          fileUrl = data.fileUrl;
+          fileName = data.fileName;
         }
       }
 

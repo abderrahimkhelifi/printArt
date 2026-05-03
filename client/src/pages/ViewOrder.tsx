@@ -2,14 +2,8 @@ import { useEffect, useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { FileIcon, ImageIcon, Download, X, ArrowRight } from "lucide-react";
+import { FileIcon, ImageIcon, Download, ArrowRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-
-interface OrderFile {
-  fileUrl: string;
-  fileName: string;
-  type: "image" | "document";
-}
 
 export default function ViewOrder() {
   const [, navigate] = useLocation();
@@ -23,13 +17,18 @@ export default function ViewOrder() {
     { enabled: !!orderId }
   );
 
-  // استخدام trpc لتحديث isRead
-  const updateOrderMutation = trpc.orders.updateStatus.useMutation();
+  // استخدام trpc لتحديث الحالة (مع تحديث isRead)
+  const updateOrderMutation = trpc.orders.updateStatus.useMutation({
+    onSuccess: () => {
+      // إعادة تحميل بيانات الطلب بعد التحديث
+      getOrderQuery.refetch();
+    },
+  });
 
   useEffect(() => {
     if (getOrderQuery.data) {
       setOrder(getOrderQuery.data);
-      // تحديث isRead عند فتح الطلب
+      // تحديث isRead عند فتح الطلب إذا لم يكن مقروءاً
       if (!getOrderQuery.data.isRead) {
         updateOrderMutation.mutate({
           id: getOrderQuery.data.id,
@@ -37,12 +36,19 @@ export default function ViewOrder() {
         });
       }
     }
-  }, [getOrderQuery.data]);
+  }, [getOrderQuery.data?.id]);
 
   const getFileType = (fileName: string): "image" | "document" => {
     const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
     const ext = fileName.split(".").pop()?.toLowerCase() || "";
     return imageExtensions.includes(ext) ? "image" : "document";
+  };
+
+  const getFileIcon = (fileName: string) => {
+    const ext = fileName.split(".").pop()?.toLowerCase() || "";
+    if (["pdf"].includes(ext)) return "📄";
+    if (["doc", "docx"].includes(ext)) return "📝";
+    return "📎";
   };
 
   if (getOrderQuery.isLoading) {
@@ -125,39 +131,41 @@ export default function ViewOrder() {
             </div>
           )}
 
-          {order.attachments && order.attachments.length > 0 && (
+          {order.fileUrl && order.fileName && (
             <div className="mb-8">
-              <h2 className="text-xl font-bold mb-4">الملفات المرفقة</h2>
-              <div className="grid grid-cols-2 gap-4">
-                {order.attachments.map((file: any, idx: number) => {
-                  const fileType = getFileType(file.fileName);
-                  return (
-                    <div key={idx} className="border rounded-lg p-4">
-                      {fileType === "image" ? (
-                        <img
-                          src={file.fileUrl}
-                          alt={file.fileName}
-                          className="w-full h-32 object-cover rounded mb-2"
-                        />
-                      ) : (
-                        <div className="w-full h-32 bg-gray-200 rounded mb-2 flex items-center justify-center">
-                          <FileIcon className="w-8 h-8 text-gray-400" />
-                        </div>
-                      )}
-                      <p className="text-sm font-medium truncate">
-                        {file.fileName}
-                      </p>
-                      <a
-                        href={file.fileUrl}
-                        download
-                        className="text-blue-600 hover:text-blue-800 text-sm mt-2 flex items-center gap-1"
-                      >
-                        <Download className="w-4 h-4" />
-                        تحميل
-                      </a>
-                    </div>
-                  );
-                })}
+              <h2 className="text-xl font-bold mb-4">الملف المرفق</h2>
+              <div className="border rounded-lg p-4">
+                {getFileType(order.fileName) === "image" ? (
+                  <>
+                    <img
+                      src={order.fileUrl}
+                      alt={order.fileName}
+                      className="w-full h-64 object-cover rounded mb-4"
+                    />
+                    <p className="text-sm font-medium mb-2">{order.fileName}</p>
+                    <a
+                      href={order.fileUrl}
+                      download
+                      className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                    >
+                      <Download className="w-4 h-4" />
+                      تحميل الصورة
+                    </a>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-4xl mb-4">{getFileIcon(order.fileName)}</div>
+                    <p className="text-sm font-medium mb-2">{order.fileName}</p>
+                    <a
+                      href={order.fileUrl}
+                      download
+                      className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                    >
+                      <Download className="w-4 h-4" />
+                      تحميل الملف
+                    </a>
+                  </>
+                )}
               </div>
             </div>
           )}
