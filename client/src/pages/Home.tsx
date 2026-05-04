@@ -464,7 +464,7 @@ export default function Home() {
               <div className="mt-12">
                 <h3 className="font-bold text-[#1a1a1a] mb-4">موقعنا على الخريطة</h3>
                 <a
-                  href="https://maps.app.goo.gl/FchoRT8zhxfb23Qx7"
+                  href="https://maps.app.goo.gl/7WQQY3tnXdwVFuSZ6?g_st=ac"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
