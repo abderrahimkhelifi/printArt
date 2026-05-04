@@ -142,14 +142,18 @@ export default function ViewOrder() {
                 {getFileType(order.fileName) === "image" ? (
                   <>
                     <img
-                      src={order.fileUrl}
+                      src={`${window.location.origin}${order.fileUrl}`}
                       alt={order.fileName}
                       className="w-full h-64 object-cover rounded mb-4"
+                      onError={(e) => {
+                        console.error('Image failed to load:', order.fileUrl);
+                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22sans-serif%22 font-size=%2220%22 fill=%22%23999%22%3EImage not found%3C/text%3E%3C/svg%3E';
+                      }}
                     />
                     <p className="text-sm font-medium mb-2">{order.fileName}</p>
                     <a
-                      href={order.fileUrl}
-                      download
+                      href={`/api/download/${order.fileUrl.split('/').pop()}?name=${encodeURIComponent(order.fileName)}`}
+                      download={order.fileName}
                       className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
                     >
                       <Download className="w-4 h-4" />
@@ -161,8 +165,8 @@ export default function ViewOrder() {
                     <div className="text-4xl mb-4">{getFileIcon(order.fileName)}</div>
                     <p className="text-sm font-medium mb-2">{order.fileName}</p>
                     <a
-                      href={order.fileUrl}
-                      download
+                      href={`/api/download/${order.fileUrl.split('/').pop()}?name=${encodeURIComponent(order.fileName)}`}
+                      download={order.fileName}
                       className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
                     >
                       <Download className="w-4 h-4" />

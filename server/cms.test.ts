@@ -82,7 +82,7 @@ describe("CMS Features", () => {
     beforeAll(async () => {
       // Create a test category first
       const categoryResult = await db.createCategory({
-        name: "Portfolio Test Category",
+        name: `Portfolio Test Category ${Date.now()}`,
         description: "For testing portfolio items",
       });
       const categories = await db.getCategories();

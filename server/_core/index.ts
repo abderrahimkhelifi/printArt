@@ -16,6 +16,7 @@ import path from "path";
 import helmet from "helmet";
 import cors from "cors";
 import { scheduleCleanup } from "../cleanup";
+import { seedDatabase } from "../seed";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -117,10 +118,12 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
-  server.listen(port, () => {
+  server.listen(port, async () => {
     console.log(`Server running on http://localhost:${port}/`);
     // بدء مهمة التنظيف التلقائي
     scheduleCleanup();
+    // تشغيل البيانات الافتراضية
+    await seedDatabase();
   });
 }
 

@@ -55,4 +55,54 @@ router.post('/upload', upload.single('file'), (req, res) => {
   });
 });
 
+// Endpoint لتحميل الملفات مع headers صحيحة
+router.get('/download/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const originalName = req.query.name ? decodeURIComponent(req.query.name as string) : filename;
+  const filepath = path.join(uploadDir, filename);
+
+  // التحقق من أن المسار آمن (لا يحتوي على ../)
+  if (!filepath.startsWith(uploadDir)) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+
+  // التحقق من وجود الملف
+  if (!fs.existsSync(filepath)) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+
+  // تحديد نوع المحتوى بناءً على امتداد الملف
+  const ext = path.extname(filename).toLowerCase();
+  const mimeTypes: { [key: string]: string } = {
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp',
+    '.pdf': 'application/pdf',
+    '.doc': 'application/msword',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.txt': 'text/plain',
+    '.zip': 'application/zip'
+  };
+
+  const contentType = mimeTypes[ext] || 'application/octet-stream';
+
+  // تعيين headers التحميل
+  res.setHeader('Content-Type', contentType);
+  res.setHeader('Content-Disposition', `attachment; filename="${originalName}"`);
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+  // إرسال الملف
+  const fileStream = fs.createReadStream(filepath);
+  fileStream.pipe(res);
+
+  fileStream.on('error', (error) => {
+    console.error('[Download Error]', error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Error downloading file' });
+    }
+  });
+});
+
 export default router;
