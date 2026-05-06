@@ -142,7 +142,7 @@ export default function ViewOrder() {
                 {getFileType(order.fileName) === "image" ? (
                   <>
                     <img
-                      src={`${window.location.origin}${order.fileUrl}`}
+                      src={`https://printart-hw8lhfdz.manus.space${order.fileUrl}`}
                       alt={order.fileName}
                       className="w-full h-64 object-cover rounded mb-4"
                       onError={(e) => {
@@ -152,7 +152,7 @@ export default function ViewOrder() {
                     />
                     <p className="text-sm font-medium mb-2">{order.fileName}</p>
                     <a
-                      href={`/api/download/${order.fileUrl.split('/').pop()}?name=${encodeURIComponent(order.fileName)}`}
+                      href={`https://printart-hw8lhfdz.manus.space/api/download/${order.fileUrl.split('/').pop()}?name=${encodeURIComponent(order.fileName)}`}
                       download={order.fileName}
                       className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
                     >
@@ -165,7 +165,7 @@ export default function ViewOrder() {
                     <div className="text-4xl mb-4">{getFileIcon(order.fileName)}</div>
                     <p className="text-sm font-medium mb-2">{order.fileName}</p>
                     <a
-                      href={`/api/download/${order.fileUrl.split('/').pop()}?name=${encodeURIComponent(order.fileName)}`}
+                      href={`https://printart-hw8lhfdz.manus.space/api/download/${order.fileUrl.split('/').pop()}?name=${encodeURIComponent(order.fileName)}`}
                       download={order.fileName}
                       className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
                     >
