@@ -118,7 +118,12 @@ export async function updateOrderStatus(id: number, status?: string, adminNotes?
   if (!db) throw new Error("Database not available");
   
   const updateData: Record<string, unknown> = {};
-  if (status !== undefined) updateData.status = status;
+  if (status !== undefined) {
+    updateData.status = status;
+    if (status === 'completed') {
+      updateData.completedAt = new Date();
+    }
+  }
   if (adminNotes !== undefined) updateData.adminNotes = adminNotes;
   if (progress !== undefined) updateData.progress = progress;
   if (estimatedPrice !== undefined) updateData.estimatedPrice = estimatedPrice;
@@ -180,15 +185,25 @@ export async function getServices() {
 }
 
 // Get services with pagination
-export async function getServicesPaginated(page: number = 1, limit: number = 10) {
+export async function getServicesPaginated(page: number = 1, limit: number = 10, includeInactive: boolean = false) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
   const offset = (page - 1) * limit;
   
-  const data = await db.select().from(services).limit(limit).offset(offset).orderBy(desc(services.createdAt));
+  // فلترة الخدمات النشطة فقط للصفحة العامة
+  const query = db.select().from(services);
+  if (!includeInactive) {
+    query.where(eq(services.isActive, 1));
+  }
   
-  const countResult = await db.select().from(services);
+  const data = await query.limit(limit).offset(offset).orderBy(desc(services.createdAt));
+  
+  const countQuery = db.select().from(services);
+  if (!includeInactive) {
+    countQuery.where(eq(services.isActive, 1));
+  }
+  const countResult = await countQuery;
   const total = countResult.length;
   
   return {

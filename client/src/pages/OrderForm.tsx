@@ -73,8 +73,9 @@ export default function OrderForm() {
     const files = e.target.files;
     if (!files) return;
 
-    const allowedTypes = ['image/jpeg', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    const maxSize = 10 * 1024 * 1024;
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const maxSizeImage = 10 * 1024 * 1024; // 10MB للصور
+    const maxSizeFile = 100 * 1024 * 1024; // 100MB للملفات
 
     Array.from(files).forEach((file) => {
       if (!allowedTypes.includes(file.type)) {
@@ -82,8 +83,13 @@ export default function OrderForm() {
         return;
       }
 
+      // تحديث الحد الأقصى بناءً على نوع الملف
+      const isImage = file.type.startsWith('image/');
+      const maxSize = isImage ? maxSizeImage : maxSizeFile;
+
       if (file.size > maxSize) {
-        toast.error(`الملف كبير جدا: ${file.name}`);
+        const maxSizeMB = isImage ? 10 : 100;
+        toast.error(`الملف كبير جدا (الحد الأقصى: ${maxSizeMB}MB): ${file.name}`);
         return;
       }
 
@@ -119,12 +125,11 @@ export default function OrderForm() {
     setIsSubmitting(true);
 
     try {
-      // Upload files if any
-      let fileUrl = undefined;
-      let fileName = undefined;
+      // Upload all files
+      const uploadedFileUrls: Array<{ fileUrl: string; fileName: string }> = [];
 
-      if (uploadedFiles.length > 0) {
-        const file = uploadedFiles[0].file;
+      for (const uploadedFile of uploadedFiles) {
+        const file = uploadedFile.file;
         const formDataForUpload = new FormData();
         formDataForUpload.append("file", file);
 
@@ -136,12 +141,17 @@ export default function OrderForm() {
 
         if (response.ok) {
           const data = await response.json();
-          fileUrl = data.fileUrl;
-          fileName = data.fileName;
+          uploadedFileUrls.push({
+            fileUrl: data.fileUrl,
+            fileName: data.fileName,
+          });
+        } else {
+          throw new Error(`فشل رفع الملف: ${file.name}`);
         }
       }
 
-      // Create order in database
+      // Create order in database with first file (for backward compatibility)
+      const firstFile = uploadedFileUrls[0];
       await createOrderMutation.mutateAsync({
         clientName: formData.name,
         clientPhone: formData.phone,
@@ -149,8 +159,8 @@ export default function OrderForm() {
         serviceType: formData.service,
         description: formData.description,
         deadline: formData.deadline ? new Date(formData.deadline) : undefined,
-        fileUrl,
-        fileName,
+        fileUrl: firstFile?.fileUrl,
+        fileName: firstFile?.fileName,
       });
 
       // Send via email or WhatsApp
@@ -183,7 +193,7 @@ export default function OrderForm() {
 ${formData.description}`;
 
     if (uploadedFiles.length > 0) {
-      message += `\n\nالملفات المرفقة: ${uploadedFiles.map(f => f.name).join(", ")}`;
+      message += `\n\nالملفات المرفقة (${uploadedFiles.length}): ${uploadedFiles.map(f => f.name).join(", ")}`;
     }
 
     return message;

@@ -28,16 +28,20 @@ export async function cleanupOldOrderFiles() {
         continue;
       }
 
-      // التحقق من أن الطلب تم تحديثه قبل 30 يوم على الأقل
-      const updatedAt = new Date(order.updatedAt || order.createdAt);
-      if (updatedAt > thirtyDaysAgo) {
+      // التحقق من أن الطلب تم إكماله قبل 30 يوم على الأقل
+      // استخدام completedAt إذا كان موجوداً، وإلا استخدام updatedAt
+      const completionTime = order.completedAt ? new Date(order.completedAt) : new Date(order.updatedAt || order.createdAt);
+      if (completionTime > thirtyDaysAgo) {
         continue;
       }
 
       // حذف الملف إذا كان موجوداً
-      if (order.fileUrl && order.fileName) {
+      if (order.fileUrl) {
         const uploadsDir = path.join(process.cwd(), "uploads");
-        const filePath = path.join(uploadsDir, order.fileName);
+        // استخراج اسم الملف من fileUrl (مثال: /uploads/filename.jpg -> filename.jpg)
+        const filename = order.fileUrl.split('/').pop();
+        if (!filename) continue;
+        const filePath = path.join(uploadsDir, filename);
 
         // التحقق من أن المسار آمن (لا يحتوي على ../)
         if (!filePath.startsWith(uploadsDir)) {
@@ -48,11 +52,11 @@ export async function cleanupOldOrderFiles() {
         try {
           if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
-            console.log(`[Cleanup] Deleted file: ${order.fileName}`);
+            console.log(`[Cleanup] Deleted file: ${filename}`);
             deletedCount++;
           }
         } catch (error) {
-          console.error(`[Cleanup] Failed to delete file ${order.fileName}:`, error);
+          console.error(`[Cleanup] Failed to delete file ${filename}:`, error);
         }
       }
     }

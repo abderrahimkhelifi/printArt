@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Trash2, Edit2, Plus, X } from "lucide-react";
+import { Loader2, Trash2, Edit2, Plus, X, Power } from "lucide-react";
 import { toast } from "sonner";
 
 interface Service {
@@ -51,7 +51,7 @@ export default function AdminServices() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch("/api/services?page=1&limit=100");
+      const response = await fetch("/api/services?page=1&limit=100&admin=true");
       
       if (!response.ok) {
         throw new Error("فشل في جلب الخدمات");
@@ -160,8 +160,32 @@ export default function AdminServices() {
     setShowForm(true);
   };
 
+  const handleToggleActive = async (id: number, currentStatus: number) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await fetch(`/api/services/${id}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": "Bearer " + (token || ""),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isActive: currentStatus === 1 ? 0 : 1 }),
+      });
+
+      if (!response.ok) {
+        throw new Error("فشل في تحديث الخدمة");
+      }
+
+      toast.success(currentStatus === 1 ? "تم تعطيل الخدمة" : "تم تمكين الخدمة");
+      await fetchServices();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "حدث خطأ غير متوقع";
+      toast.error(message);
+    }
+  };
+
   const handleDelete = async (id: number) => {
-    if (!confirm("هل أنت متأكد من حذف هذه الخدمة؟")) {
+    if (!confirm("هل أنت متأكد من حذف هذه الخدمة؟ لا يمكن التراجع عن هذا الإجراء")) {
       return;
     }
 
@@ -357,9 +381,12 @@ export default function AdminServices() {
             <p className="text-yellow-600">لا توجد خدمات متاحة حالياً</p>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service) => (
-              <Card key={service.id} className="border-0 shadow-lg overflow-hidden">
+          <div className="space-y-6">
+            {services.map((service, index) => (
+              <div key={service.id}>
+                <Card className={`border-0 shadow-lg overflow-hidden ${
+                  service.isActive === 0 ? 'opacity-60 bg-gray-100' : ''
+                }`}>
                 {/* Service Image */}
                 <div className="h-48 bg-gradient-to-br from-[#B87333] to-[#8B5A2B] flex items-center justify-center overflow-hidden">
                   {service.imageUrl ? (
@@ -387,7 +414,7 @@ export default function AdminServices() {
                     </p>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <Button 
                       onClick={() => handleEdit(service)}
                       variant="outline"
@@ -395,6 +422,18 @@ export default function AdminServices() {
                     >
                       <Edit2 className="w-4 h-4 mr-2" />
                       تعديل
+                    </Button>
+                    <Button 
+                      onClick={() => handleToggleActive(service.id, service.isActive)}
+                      variant="outline"
+                      className={`flex-1 ${
+                        service.isActive === 1
+                          ? 'border-yellow-500 text-yellow-500 hover:bg-yellow-50'
+                          : 'border-green-500 text-green-500 hover:bg-green-50'
+                      }`}
+                    >
+                      <Power className="w-4 h-4 mr-2" />
+                      {service.isActive === 1 ? 'تعطيل' : 'تمكين'}
                     </Button>
                     <Button 
                       onClick={() => handleDelete(service.id)}
@@ -407,6 +446,9 @@ export default function AdminServices() {
                   </div>
                 </div>
               </Card>
+              {index < services.length - 1 && <hr className="border-[#E8E4DB]" />
+              }
+              </div>
             ))}
           </div>
         )}

@@ -71,7 +71,9 @@ router.get("/", async (req: Request, res: Response) => {
         error: "صفحة وحد أقصى يجب أن يكونا أكبر من 0",
       });
     }
-    const result = await getServicesPaginated(page, limit);
+    // الخدمات المعطلة تظهر للمسؤول فقط (مع query param admin)
+    const isAdmin = req.query.admin === 'true';
+    const result = await getServicesPaginated(page, limit, isAdmin);
     // إضافة رابط الصورة لكل خدمة
     const servicesWithImages = result.data.map((service) => ({
       ...service,

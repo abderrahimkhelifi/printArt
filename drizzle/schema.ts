@@ -42,6 +42,7 @@ export const orders = mysqlTable("orders", {
   notes: text("notes"),
   adminNotes: text("adminNotes"),
   isRead: tinyint("isRead").default(0).notNull(),
+  completedAt: timestamp("completedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
