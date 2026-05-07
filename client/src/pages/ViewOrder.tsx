@@ -147,31 +147,41 @@ export default function ViewOrder() {
                       className="w-full h-64 object-cover rounded mb-4"
                       onError={(e) => {
                         console.error('Image failed to load:', order.fileUrl);
-                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22sans-serif%22 font-size=%2220%22 fill=%22%23999%22%3EImage not found%3C/text%3E%3C/svg%3E';
+                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22sans-serif%22 font-size=%2220%22 fill=%22%23999%22%3Eصورة غير متاحة%3C/text%3E%3C/svg%3E';
                       }}
                     />
-                    <p className="text-sm font-medium mb-2">{order.fileName}</p>
-                    <a
-                      href={`/api/download/${order.fileUrl.split('/').pop()}?name=${encodeURIComponent(order.fileName)}`}
-                      download={order.fileName}
-                      className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                    <p className="text-sm font-medium mb-2 text-right">{order.fileName}</p>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="w-full flex items-center justify-center gap-2"
                     >
-                      <Download className="w-4 h-4" />
-                      تحميل الصورة
-                    </a>
+                      <a
+                        href={`/api/download/${encodeURIComponent(order.fileName)}`}
+                        download={order.fileName}
+                      >
+                        <Download className="w-4 h-4" />
+                        تحميل الصورة
+                      </a>
+                    </Button>
                   </>
                 ) : (
                   <>
-                    <div className="text-4xl mb-4">{getFileIcon(order.fileName)}</div>
-                    <p className="text-sm font-medium mb-2">{order.fileName}</p>
-                    <a
-                      href={`/api/download/${order.fileUrl.split('/').pop()}?name=${encodeURIComponent(order.fileName)}`}
-                      download={order.fileName}
-                      className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                    <div className="text-4xl mb-4 text-center">{getFileIcon(order.fileName)}</div>
+                    <p className="text-sm font-medium mb-2 text-right">{order.fileName}</p>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="w-full flex items-center justify-center gap-2"
                     >
-                      <Download className="w-4 h-4" />
-                      تحميل الملف
-                    </a>
+                      <a
+                        href={`/api/download/${encodeURIComponent(order.fileName)}`}
+                        download={order.fileName}
+                      >
+                        <Download className="w-4 h-4" />
+                        تحميل الملف
+                      </a>
+                    </Button>
                   </>
                 )}
               </div>
