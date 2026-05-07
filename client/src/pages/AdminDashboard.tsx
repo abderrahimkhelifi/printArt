@@ -120,7 +120,7 @@ export default function AdminDashboard() {
     },
   });
 
-  const handlePortfolioImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePortfolioImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setPortfolioImage(file);
@@ -129,6 +129,27 @@ export default function AdminDashboard() {
         setPortfolioImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+      
+      // رفع الصورة مباشرة
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await response.json();
+        if (data.fileUrl) {
+          setPortfolioForm(prev => ({
+            ...prev,
+            imageUrl: data.fileUrl
+          }));
+          toast.success('تم رفع الصورة بنجاح');
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        toast.error('فشل رفع الصورة');
+      }
     }
   };
 

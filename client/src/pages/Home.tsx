@@ -13,6 +13,7 @@ export default function Home() {
 
   const [, navigate] = useLocation();
   const settingsQuery = trpc.settings.list.useQuery();
+  const servicesQuery = trpc.services.list.useQuery();
 
   const logoUrl = useMemo(() => {
     const logoSetting = settingsQuery.data?.find(s => s.key === 'logo');
@@ -132,239 +133,39 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Service 1: Thesis Printing */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth overflow-hidden group">
-              <div className="h-48 bg-gradient-to-br from-[#B87333] to-[#8B5A2B] flex items-center justify-center">
-                <BookOpen className="w-16 h-16 text-white opacity-80" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-subheading text-[#1a1a1a] mb-3">إنجاز مذكرات التخرج</h3>
-                <ul className="space-y-2 text-[#8B8680] mb-6">
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>تجليد فاخر احترافي</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>تنسيق أكاديمي دقيق</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>طباعة ملونة عالية الجودة</span>
-                  </li>
-                </ul>
-                <div className="flex gap-2 flex-wrap">
-                  <Button 
-                    onClick={handleOrderClick}
-                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
-                  >
-                    اطلب الخدمة
-                  </Button>
-                  <Button 
-                    onClick={() => handleWhatsAppClick("إنجاز مذكرات التخرج")}
-                    variant="outline"
-                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Service 2: Logo Design */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth overflow-hidden group">
-              <div className="h-48 bg-gradient-to-br from-[#2D5016] to-[#1a3a0a] flex items-center justify-center">
-                <Palette className="w-16 h-16 text-white opacity-80" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-subheading text-[#1a1a1a] mb-3">تصميم الهوية البصرية</h3>
-                <ul className="space-y-2 text-[#8B8680] mb-6">
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>تصميم شعارات احترافية</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>إبداع وتميز في التصميم</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>هوية بصرية متكاملة</span>
-                  </li>
-                </ul>
-                <div className="flex gap-2 flex-wrap">
-                  <Button 
-                    onClick={handleOrderClick}
-                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
-                  >
-                    اطلب الخدمة
-                  </Button>
-                  <Button 
-                    onClick={() => handleWhatsAppClick("تصميم الهوية البصرية")}
-                    variant="outline"
-                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Service 3: CV Writing */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth overflow-hidden group">
-              <div className="h-48 bg-gradient-to-br from-[#8B8680] to-[#6B6560] flex items-center justify-center">
-                <FileText className="w-16 h-16 text-white opacity-80" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-subheading text-[#1a1a1a] mb-3">كتابة السيرة الذاتية</h3>
-                <ul className="space-y-2 text-[#8B8680] mb-6">
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>تنسيق عصري احترافي</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>إبراز المهارات والإنجازات</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>محتوى مقنع وجذاب</span>
-                  </li>
-                </ul>
-                <div className="flex gap-2 flex-wrap">
-                  <Button 
-                    onClick={handleOrderClick}
-                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
-                  >
-                    اطلب الخدمة
-                  </Button>
-                  <Button 
-                    onClick={() => handleWhatsAppClick("كتابة السيرة الذاتية")}
-                    variant="outline"
-                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Service 4: Business Cards */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth overflow-hidden group">
-              <div className="h-48 bg-gradient-to-br from-[#B87333] to-[#D4A574] flex items-center justify-center">
-                <Printer className="w-16 h-16 text-white opacity-80" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-subheading text-[#1a1a1a] mb-3">كروت الأعمال</h3>
-                <ul className="space-y-2 text-[#8B8680] mb-6">
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>تصميم احترافي مخصص</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>طباعة عالية الجودة</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>خيارات متعددة من الورق</span>
-                  </li>
-                </ul>
-                <div className="flex gap-2 flex-wrap">
-                  <Button 
-                    onClick={handleOrderClick}
-                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
-                  >
-                    اطلب الخدمة
-                  </Button>
-                  <Button 
-                    onClick={() => handleWhatsAppClick("كروت الأعمال")}
-                    variant="outline"
-                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Service 5: Flyers & Brochures */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth overflow-hidden group">
-              <div className="h-48 bg-gradient-to-br from-[#2D5016] to-[#4A7C2C] flex items-center justify-center">
-                <Award className="w-16 h-16 text-white opacity-80" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-subheading text-[#1a1a1a] mb-3">المطويات والإعلانات</h3>
-                <ul className="space-y-2 text-[#8B8680] mb-6">
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>تصميم إبداعي جذاب</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>طباعة ملونة احترافية</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>تسليم سريع وموثوق</span>
-                  </li>
-                </ul>
-                <div className="flex gap-2 flex-wrap">
-                  <Button 
-                    onClick={handleOrderClick}
-                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
-                  >
-                    اطلب الخدمة
-                  </Button>
-                  <Button 
-                    onClick={() => handleWhatsAppClick("المطويات والإعلانات")}
-                    variant="outline"
-                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Service 6: Other Printing */}
-            <Card className="border-0 shadow-lg hover:shadow-xl transition-smooth overflow-hidden group">
-              <div className="h-48 bg-gradient-to-br from-[#8B8680] to-[#A9A39A] flex items-center justify-center">
-                <Users className="w-16 h-16 text-white opacity-80" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-subheading text-[#1a1a1a] mb-3">خدمات طباعة أخرى</h3>
-                <ul className="space-y-2 text-[#8B8680] mb-6">
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>طباعة مخصصة حسب الطلب</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>استشارة تصميمية مجانية</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Zap className="w-4 h-4 mt-1 copper-text flex-shrink-0" />
-                    <span>أسعار تنافسية وجودة مضمونة</span>
-                  </li>
-                </ul>
-                <div className="flex gap-2 flex-wrap">
-                  <Button 
-                    onClick={handleOrderClick}
-                    className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
-                  >
-                    اطلب الخدمة
-                  </Button>
-                  <Button 
-                    onClick={() => handleWhatsAppClick("خدمات طباعة أخرى")}
-                    variant="outline"
-                    className="border-[#25D366] text-[#25D366] hover:bg-green-50"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
+            {servicesQuery.isLoading ? (
+              <div className="col-span-full text-center text-[#8B8680]">جاري تحميل الخدمات...</div>
+            ) : servicesQuery.data && servicesQuery.data.length > 0 ? (
+              servicesQuery.data.filter((service: any) => service.isActive).map((service: any) => (
+                <Card key={service.id} className="border-0 shadow-lg hover:shadow-xl transition-smooth overflow-hidden group">
+                  <div className="h-48 bg-gradient-to-br from-[#B87333] to-[#8B5A2B] flex items-center justify-center">
+                    <Printer className="w-16 h-16 text-white opacity-80" />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-subheading text-[#1a1a1a] mb-3">{service.name}</h3>
+                    <p className="text-[#8B8680] mb-6">{service.description}</p>
+                    <div className="flex gap-2 flex-wrap">
+                      <Button 
+                        onClick={handleOrderClick}
+                        className="flex-1 bg-[#B87333] hover:bg-[#8B5A2B] text-white"
+                      >
+                        اطلب الخدمة
+                      </Button>
+                      <Button 
+                        onClick={() => handleWhatsAppClick(service.name)}
+                        variant="outline"
+                        className="border-[#25D366] text-[#25D366] hover:bg-green-50"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-[#8B8680]">لا توجد خدمات متاحة حالياً</div>
+            )}
+            {/* Deprecated static services removed - now using dynamic services from database */}
           </div>
         </div>
       </section>

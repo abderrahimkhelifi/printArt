@@ -256,6 +256,34 @@ class SDKServer {
     } as GetUserInfoWithJwtResponse;
   }
 
+  async authenticateJwt(userInfo: GetUserInfoWithJwtResponse): Promise<User> {
+    const signedInAt = new Date();
+    let user = await db.getUserByOpenId(userInfo.openId);
+
+    // If user not in DB, sync from OAuth server automatically
+    if (!user) {
+      await db.upsertUser({
+        openId: userInfo.openId,
+        name: userInfo.name || null,
+        email: userInfo.email ?? null,
+        loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
+        lastSignedIn: signedInAt,
+      });
+      user = await db.getUserByOpenId(userInfo.openId);
+    }
+
+    if (!user) {
+      throw ForbiddenError("User not found");
+    }
+
+    await db.upsertUser({
+      openId: user.openId,
+      lastSignedIn: signedInAt,
+    });
+
+    return user;
+  }
+
   async authenticateRequest(req: Request): Promise<User> {
     // Regular authentication flow
     const cookies = this.parseCookies(req.headers.cookie);
