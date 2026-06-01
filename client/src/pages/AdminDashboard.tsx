@@ -87,6 +87,7 @@ export default function AdminDashboard() {
   });
 
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+  const [filterStatus, setFilterStatus] = useState<"all" | "new" | "in_progress" | "completed">("all");
 
   // Check admin authentication
   useEffect(() => {
@@ -276,6 +277,11 @@ export default function AdminDashboard() {
   const completedCount = ordersQuery.data?.filter((o) => o.status === "completed").length || 0;
   const totalCount = ordersQuery.data?.length || 0;
 
+  const filteredOrders = ordersQuery.data?.filter((o) => {
+    if (filterStatus === "all") return true;
+    return o.status === filterStatus;
+  }) ?? [];
+
   return (
     <DashboardLayout>
       <div className="min-h-screen bg-[#f5f0e8] p-6 space-y-6">
@@ -296,10 +302,17 @@ export default function AdminDashboard() {
           </Button>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards — Filter Buttons */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* New Orders */}
-          <Card className="p-6 rounded-2xl shadow-md border-0 bg-gradient-to-br from-blue-50 to-blue-100/60 hover:shadow-lg transition-shadow">
+          <Card
+            onClick={() => { setFilterStatus("new"); setSelectedTab("orders"); }}
+            className={`p-6 rounded-2xl shadow-md border-2 bg-gradient-to-br from-blue-50 to-blue-100/60 hover:shadow-lg transition-all cursor-pointer select-none ${
+              filterStatus === "new"
+                ? "border-blue-500 ring-2 ring-blue-300 shadow-blue-100"
+                : "border-transparent"
+            }`}
+          >
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm font-medium text-blue-700">الطلبات الجديدة</div>
               <div className="w-10 h-10 bg-blue-500/15 rounded-xl flex items-center justify-center">
@@ -307,11 +320,20 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="text-4xl font-bold text-blue-700">{newOrdersCount}</div>
-            <div className="text-xs text-blue-500 mt-1">بانتظار المعالجة</div>
+            <div className="text-xs text-blue-500 mt-1">
+              {filterStatus === "new" ? "✓ فلتر نشط" : "بانتظار المعالجة"}
+            </div>
           </Card>
 
           {/* In Progress */}
-          <Card className="p-6 rounded-2xl shadow-md border-0 bg-gradient-to-br from-amber-50 to-amber-100/60 hover:shadow-lg transition-shadow">
+          <Card
+            onClick={() => { setFilterStatus("in_progress"); setSelectedTab("orders"); }}
+            className={`p-6 rounded-2xl shadow-md border-2 bg-gradient-to-br from-amber-50 to-amber-100/60 hover:shadow-lg transition-all cursor-pointer select-none ${
+              filterStatus === "in_progress"
+                ? "border-amber-500 ring-2 ring-amber-300 shadow-amber-100"
+                : "border-transparent"
+            }`}
+          >
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm font-medium text-amber-700">قيد التنفيذ</div>
               <div className="w-10 h-10 bg-amber-500/15 rounded-xl flex items-center justify-center">
@@ -319,11 +341,20 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="text-4xl font-bold text-amber-700">{inProgressCount}</div>
-            <div className="text-xs text-amber-500 mt-1">جاري العمل عليها</div>
+            <div className="text-xs text-amber-500 mt-1">
+              {filterStatus === "in_progress" ? "✓ فلتر نشط" : "جاري العمل عليها"}
+            </div>
           </Card>
 
           {/* Completed */}
-          <Card className="p-6 rounded-2xl shadow-md border-0 bg-gradient-to-br from-emerald-50 to-emerald-100/60 hover:shadow-lg transition-shadow">
+          <Card
+            onClick={() => { setFilterStatus("completed"); setSelectedTab("orders"); }}
+            className={`p-6 rounded-2xl shadow-md border-2 bg-gradient-to-br from-emerald-50 to-emerald-100/60 hover:shadow-lg transition-all cursor-pointer select-none ${
+              filterStatus === "completed"
+                ? "border-emerald-500 ring-2 ring-emerald-300 shadow-emerald-100"
+                : "border-transparent"
+            }`}
+          >
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm font-medium text-emerald-700">المكتملة</div>
               <div className="w-10 h-10 bg-emerald-500/15 rounded-xl flex items-center justify-center">
@@ -331,11 +362,20 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="text-4xl font-bold text-emerald-700">{completedCount}</div>
-            <div className="text-xs text-emerald-500 mt-1">تمت بنجاح</div>
+            <div className="text-xs text-emerald-500 mt-1">
+              {filterStatus === "completed" ? "✓ فلتر نشط" : "تمت بنجاح"}
+            </div>
           </Card>
 
           {/* Total */}
-          <Card className="p-6 rounded-2xl shadow-md border-0 bg-gradient-to-br from-[#fdf6ee] to-[#f5e8d5] hover:shadow-lg transition-shadow">
+          <Card
+            onClick={() => { setFilterStatus("all"); setSelectedTab("orders"); }}
+            className={`p-6 rounded-2xl shadow-md border-2 bg-gradient-to-br from-[#fdf6ee] to-[#f5e8d5] hover:shadow-lg transition-all cursor-pointer select-none ${
+              filterStatus === "all"
+                ? "border-[#B87333] ring-2 ring-[#B87333]/40 shadow-[#B87333]/10"
+                : "border-transparent"
+            }`}
+          >
             <div className="flex items-center justify-between mb-3">
               <div className="text-sm font-medium text-[#8B5A2B]">إجمالي الطلبات</div>
               <div className="w-10 h-10 bg-[#B87333]/15 rounded-xl flex items-center justify-center">
@@ -343,7 +383,9 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="text-4xl font-bold text-[#B87333]">{totalCount}</div>
-            <div className="text-xs text-[#B87333]/70 mt-1">منذ البداية</div>
+            <div className="text-xs text-[#B87333]/70 mt-1">
+              {filterStatus === "all" ? "✓ فلتر نشط" : "منذ البداية"}
+            </div>
           </Card>
         </div>
 
@@ -384,8 +426,22 @@ export default function AdminDashboard() {
 
           {/* Orders Tab */}
           <TabsContent value="orders" className="space-y-4 mt-4">
+            {filterStatus !== "all" && (
+              <div className="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 border border-[#E8E4DB] shadow-sm">
+                <span className="text-sm text-[#8B8680]">
+                  عرض: <strong className="text-[#1a1a1a]">{statusLabels[filterStatus]}</strong>
+                  {" "}({filteredOrders.length} طلب)
+                </span>
+                <button
+                  onClick={() => setFilterStatus("all")}
+                  className="text-xs text-[#B87333] hover:underline font-medium"
+                >
+                  عرض الكل ×
+                </button>
+              </div>
+            )}
             <div className="grid gap-4">
-              {ordersQuery.data?.map((order: any) => (
+              {filteredOrders.map((order: any) => (
                 <Card
                   key={order.id}
                   className="p-6 rounded-2xl shadow-sm border border-[#E8E4DB] bg-white hover:shadow-md transition-shadow"
@@ -590,10 +646,22 @@ export default function AdminDashboard() {
                 </Card>
               ))}
 
-              {ordersQuery.data?.length === 0 && (
+              {filteredOrders.length === 0 && (
                 <div className="text-center py-16 text-[#8B8680]">
                   <ShoppingBag className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p>لا توجد طلبات بعد</p>
+                  <p>
+                    {filterStatus === "all"
+                      ? "لا توجد طلبات بعد"
+                      : `لا توجد طلبات بحالة "${statusLabels[filterStatus]}"`}
+                  </p>
+                  {filterStatus !== "all" && (
+                    <button
+                      onClick={() => setFilterStatus("all")}
+                      className="mt-2 text-sm text-[#B87333] hover:underline"
+                    >
+                      عرض جميع الطلبات
+                    </button>
+                  )}
                 </div>
               )}
             </div>
