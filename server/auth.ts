@@ -2,9 +2,6 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { ENV } from "./_core/env";
 
-// Bcrypt hash for 'Tadjeddine08'
-const ADMIN_PASSWORD_HASH = "$2b$10$gY2HsI3NfCsmc0SGlPYIYeCbvnO0fYscotFjIa.d7XB4Wa/exPtBO";
-
 export interface AdminToken {
   isAdmin: boolean;
   iat: number;
@@ -18,17 +15,25 @@ export async function verifyAdminCredentials(
   email: string,
   password: string
 ): Promise<boolean> {
-  // التحقق من البريد الإلكتروني
   if (email !== ENV.adminEmail) {
     console.log("[Auth] Email mismatch:", email, "vs", ENV.adminEmail);
     return false;
   }
-  
-  // مقارنة كلمة المرور باستخدام bcrypt فقط
+
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    console.error("[Auth] ADMIN_PASSWORD not set");
+    return false;
+  }
+
   try {
-    const isPasswordValid = await bcryptjs.compare(password, ADMIN_PASSWORD_HASH);
-    console.log("[Auth] Bcrypt comparison result:", isPasswordValid);
-    return isPasswordValid;
+    // Support both plain-text and bcrypt-hashed passwords
+    if (adminPassword.startsWith("$2")) {
+      const isPasswordValid = await bcryptjs.compare(password, adminPassword);
+      return isPasswordValid;
+    } else {
+      return password === adminPassword;
+    }
   } catch (error) {
     console.error("[Auth] Error comparing passwords:", error);
     return false;
@@ -42,7 +47,7 @@ export function generateAdminToken(): string {
   const token = jwt.sign(
     { isAdmin: true },
     ENV.jwtSecret,
-    { expiresIn: "24h" } // صلاحية يوم واحد
+    { expiresIn: "24h" }
   );
   return token;
 }
@@ -68,11 +73,11 @@ export function verifyAdminToken(token: string): AdminToken | null {
  */
 export function extractTokenFromHeader(authHeader: string | undefined): string | null {
   if (!authHeader) return null;
-  
+
   const parts = authHeader.split(" ");
   if (parts.length !== 2 || parts[0] !== "Bearer") {
     return null;
   }
-  
+
   return parts[1];
 }
