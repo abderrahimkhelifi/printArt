@@ -46,10 +46,16 @@ export default function DashboardLayout({
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
+  const hasAdminToken = Boolean(localStorage.getItem("adminToken"));
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
   }, [sidebarWidth]);
+
+  // If admin token exists, render children directly without OAuth check
+  if (hasAdminToken) {
+    return <>{children}</>;
+  }
 
   if (loading) {
     return <DashboardLayoutSkeleton />
