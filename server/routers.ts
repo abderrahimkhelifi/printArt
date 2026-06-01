@@ -47,14 +47,12 @@ export const appRouter = router({
         });
 
         // Create notification for new order
-        if (order && typeof order === 'object' && 'insertId' in order) {
-          await db.createNotification({
-            type: "new_order",
-            title: "طلب جديد",
-            content: `تم استقبال طلب جديد من ${input.clientName} للخدمة: ${input.serviceType}`,
-            orderId: order.insertId as number,
-          });
-        }
+        await db.createNotification({
+          type: "new_order",
+          title: "طلب جديد",
+          content: `تم استقبال طلب جديد من ${input.clientName} للخدمة: ${input.serviceType}`,
+          orderId: undefined,
+        });
 
         return order;
       }),
