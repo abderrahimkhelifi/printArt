@@ -29,6 +29,10 @@ import {
   Plus,
   LogOut,
   Bell,
+  ShoppingBag,
+  Clock,
+  CheckCircle2,
+  BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -130,7 +134,6 @@ export default function AdminDashboard() {
       };
       reader.readAsDataURL(file);
       
-      // رفع الصورة مباشرة
       const formData = new FormData();
       formData.append('file', file);
       try {
@@ -259,24 +262,34 @@ export default function AdminDashboard() {
   };
 
   const statusColors: Record<string, string> = {
-    new: "bg-blue-100 text-blue-800",
-    pending_approval: "bg-yellow-100 text-yellow-800",
-    approved: "bg-green-100 text-green-800",
-    in_progress: "bg-purple-100 text-purple-800",
-    completed: "bg-emerald-100 text-emerald-800",
-    delayed: "bg-orange-100 text-orange-800",
-    cancelled: "bg-red-100 text-red-800",
+    new: "bg-blue-100 text-blue-800 border border-blue-200",
+    pending_approval: "bg-yellow-100 text-yellow-800 border border-yellow-200",
+    approved: "bg-green-100 text-green-800 border border-green-200",
+    in_progress: "bg-purple-100 text-purple-800 border border-purple-200",
+    completed: "bg-emerald-100 text-emerald-800 border border-emerald-200",
+    delayed: "bg-orange-100 text-orange-800 border border-orange-200",
+    cancelled: "bg-red-100 text-red-800 border border-red-200",
   };
+
+  const newOrdersCount = ordersQuery.data?.filter((o) => o.status === "new").length || 0;
+  const inProgressCount = ordersQuery.data?.filter((o) => o.status === "in_progress").length || 0;
+  const completedCount = ordersQuery.data?.filter((o) => o.status === "completed").length || 0;
+  const totalCount = ordersQuery.data?.length || 0;
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="min-h-screen bg-[#f5f0e8] p-6 space-y-6">
+
+        {/* Header */}
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">لوحة التحكم</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-[#1a1a1a]">لوحة التحكم</h1>
+            <p className="text-sm text-[#8B8680] mt-1">إدارة طلبات وخدمات PrintArt</p>
+          </div>
           <Button
             onClick={handleLogout}
             variant="outline"
-            className="text-red-600 hover:bg-red-50"
+            className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 shadow-sm transition-all"
           >
             <LogOut className="w-4 h-4 mr-2" />
             تسجيل خروج
@@ -285,102 +298,153 @@ export default function AdminDashboard() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="p-6">
-            <div className="text-sm text-gray-600 mb-2">الطلبات الجديدة</div>
-            <div className="text-3xl font-bold text-blue-600">
-              {ordersQuery.data?.filter((o) => o.status === "new").length || 0}
+          {/* New Orders */}
+          <Card className="p-6 rounded-2xl shadow-md border-0 bg-gradient-to-br from-blue-50 to-blue-100/60 hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-medium text-blue-700">الطلبات الجديدة</div>
+              <div className="w-10 h-10 bg-blue-500/15 rounded-xl flex items-center justify-center">
+                <ShoppingBag className="w-5 h-5 text-blue-600" />
+              </div>
             </div>
+            <div className="text-4xl font-bold text-blue-700">{newOrdersCount}</div>
+            <div className="text-xs text-blue-500 mt-1">بانتظار المعالجة</div>
           </Card>
-          <Card className="p-6">
-            <div className="text-sm text-gray-600 mb-2">قيد التنفيذ</div>
-            <div className="text-3xl font-bold text-yellow-600">
-              {
-                ordersQuery.data?.filter((o) => o.status === "in_progress")
-                  .length || 0
-              }
+
+          {/* In Progress */}
+          <Card className="p-6 rounded-2xl shadow-md border-0 bg-gradient-to-br from-amber-50 to-amber-100/60 hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-medium text-amber-700">قيد التنفيذ</div>
+              <div className="w-10 h-10 bg-amber-500/15 rounded-xl flex items-center justify-center">
+                <Clock className="w-5 h-5 text-amber-600" />
+              </div>
             </div>
+            <div className="text-4xl font-bold text-amber-700">{inProgressCount}</div>
+            <div className="text-xs text-amber-500 mt-1">جاري العمل عليها</div>
           </Card>
-          <Card className="p-6">
-            <div className="text-sm text-gray-600 mb-2">المكتملة</div>
-            <div className="text-3xl font-bold text-green-600">
-              {ordersQuery.data?.filter((o) => o.status === "completed").length || 0}
+
+          {/* Completed */}
+          <Card className="p-6 rounded-2xl shadow-md border-0 bg-gradient-to-br from-emerald-50 to-emerald-100/60 hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-medium text-emerald-700">المكتملة</div>
+              <div className="w-10 h-10 bg-emerald-500/15 rounded-xl flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              </div>
             </div>
+            <div className="text-4xl font-bold text-emerald-700">{completedCount}</div>
+            <div className="text-xs text-emerald-500 mt-1">تمت بنجاح</div>
           </Card>
-          <Card className="p-6">
-            <div className="text-sm text-gray-600 mb-2">إجمالي الطلبات</div>
-            <div className="text-3xl font-bold text-[#B87333]">
-              {ordersQuery.data?.length || 0}
+
+          {/* Total */}
+          <Card className="p-6 rounded-2xl shadow-md border-0 bg-gradient-to-br from-[#fdf6ee] to-[#f5e8d5] hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm font-medium text-[#8B5A2B]">إجمالي الطلبات</div>
+              <div className="w-10 h-10 bg-[#B87333]/15 rounded-xl flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-[#B87333]" />
+              </div>
             </div>
+            <div className="text-4xl font-bold text-[#B87333]">{totalCount}</div>
+            <div className="text-xs text-[#B87333]/70 mt-1">منذ البداية</div>
           </Card>
         </div>
 
+        {/* Tabs */}
         <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="orders">الطلبات</TabsTrigger>
-            <TabsTrigger value="portfolio">الأعمال</TabsTrigger>
-            <TabsTrigger value="services">الخدمات</TabsTrigger>
-            <TabsTrigger value="categories">الفئات</TabsTrigger>
-            <TabsTrigger value="settings">الإعدادات</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 bg-white shadow-sm rounded-xl p-1 border border-[#E8E4DB]">
+            <TabsTrigger
+              value="orders"
+              className="rounded-lg font-medium text-[#8B8680] data-[state=active]:bg-[#B87333] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              الطلبات
+            </TabsTrigger>
+            <TabsTrigger
+              value="portfolio"
+              className="rounded-lg font-medium text-[#8B8680] data-[state=active]:bg-[#B87333] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              الأعمال
+            </TabsTrigger>
+            <TabsTrigger
+              value="services"
+              className="rounded-lg font-medium text-[#8B8680] data-[state=active]:bg-[#B87333] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              الخدمات
+            </TabsTrigger>
+            <TabsTrigger
+              value="categories"
+              className="rounded-lg font-medium text-[#8B8680] data-[state=active]:bg-[#B87333] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              الفئات
+            </TabsTrigger>
+            <TabsTrigger
+              value="settings"
+              className="rounded-lg font-medium text-[#8B8680] data-[state=active]:bg-[#B87333] data-[state=active]:text-white data-[state=active]:shadow-sm transition-all"
+            >
+              الإعدادات
+            </TabsTrigger>
           </TabsList>
 
           {/* Orders Tab */}
-          <TabsContent value="orders" className="space-y-4">
+          <TabsContent value="orders" className="space-y-4 mt-4">
             <div className="grid gap-4">
               {ordersQuery.data?.map((order: any) => (
-                <Card key={order.id} className="p-6">
+                <Card
+                  key={order.id}
+                  className="p-6 rounded-2xl shadow-sm border border-[#E8E4DB] bg-white hover:shadow-md transition-shadow"
+                >
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-lg">{order.clientName}</h3>
+                        <h3 className="font-bold text-lg text-[#1a1a1a]">{order.clientName}</h3>
                         {!order.isRead && (
-                          <Bell className="w-5 h-5 text-yellow-500" />
+                          <span className="relative flex items-center justify-center">
+                            <span className="animate-ping absolute inline-flex h-4 w-4 rounded-full bg-yellow-400 opacity-60"></span>
+                            <Bell className="w-5 h-5 text-yellow-500 relative z-10" />
+                          </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600">
-                        {order.clientEmail}
-                      </p>
+                      <p className="text-sm text-[#8B8680] mt-0.5">{order.clientEmail}</p>
                     </div>
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        statusColors[order.status] || "bg-gray-100"
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        statusColors[order.status] || "bg-gray-100 text-gray-600"
                       }`}
                     >
                       {statusLabels[order.status] || order.status}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
+                  <div className="grid grid-cols-2 gap-4 mb-4 text-sm bg-[#faf8f5] rounded-xl p-4">
                     <div>
-                      <p className="text-gray-600">نوع الخدمة</p>
-                      <p className="font-medium">{order.serviceType}</p>
+                      <p className="text-[#8B8680] text-xs mb-1">نوع الخدمة</p>
+                      <p className="font-semibold text-[#1a1a1a]">{order.serviceType}</p>
                     </div>
                     <div>
-                      <p className="text-gray-600">رقم الهاتف</p>
+                      <p className="text-[#8B8680] text-xs mb-1">رقم الهاتف</p>
                       <div className="flex items-center gap-2">
-                        <p className="font-medium">{order.clientPhone}</p>
+                        <p className="font-semibold text-[#1a1a1a]">{order.clientPhone}</p>
                         <a
                           href={`https://wa.me/${order.clientPhone.replace(/[^0-9]/g, '')}?text=أهلاً بك، نحن بصدد معالجة طلبك بخصوص ${order.serviceType} في مكتبة PrintArt...`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-green-500 hover:text-green-700"
+                          className="flex items-center justify-center w-7 h-7 bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors shadow-sm"
+                          title="تواصل عبر واتساب"
                         >
-                          <MessageCircle size={20} />
+                          <MessageCircle size={14} />
                         </a>
                       </div>
                     </div>
                     <div>
-                      <p className="text-gray-600">نسبة التقدم</p>
+                      <p className="text-[#8B8680] text-xs mb-1">نسبة التقدم</p>
                       <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
                         <div
-                          className="bg-blue-600 h-2 rounded-full"
+                          className="bg-[#B87333] h-2 rounded-full transition-all"
                           style={{ width: `${order.progress || 0}%` }}
                         ></div>
                       </div>
-                      <p className="text-xs mt-1">{order.progress || 0}%</p>
+                      <p className="text-xs mt-1 text-[#8B8680]">{order.progress || 0}%</p>
                     </div>
                     <div>
-                      <p className="text-gray-600">السعر المتوقع</p>
-                      <p className="font-medium">
+                      <p className="text-[#8B8680] text-xs mb-1">السعر المتوقع</p>
+                      <p className="font-semibold text-[#1a1a1a]">
                         {order.estimatedPrice
                           ? `${order.estimatedPrice} دج`
                           : "لم يحدد"}
@@ -388,166 +452,163 @@ export default function AdminDashboard() {
                     </div>
                   </div>
 
-                  <p className="text-sm text-gray-700 mb-4">
-                    <strong>الوصف:</strong> {order.description}
+                  <p className="text-sm text-[#4a4a4a] mb-4 leading-relaxed">
+                    <strong className="text-[#1a1a1a]">الوصف:</strong> {order.description}
                   </p>
 
                   {order.adminNotes && (
-                    <p className="text-sm text-gray-700 mb-4">
-                      <strong>ملاحظات:</strong> {order.adminNotes}
+                    <p className="text-sm text-[#4a4a4a] mb-4 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                      <strong className="text-amber-800">ملاحظات:</strong> {order.adminNotes}
                     </p>
                   )}
 
-                  <div className="flex gap-2 mb-4">
+                  <div className="flex gap-3 mt-2">
                     <Button
-                      variant="outline"
-                      onClick={() => {
-                        navigate(`/admin/orders/${order.id}`);
-                      }}
+                      onClick={() => navigate(`/admin/orders/${order.id}`)}
+                      className="bg-[#B87333] hover:bg-[#a0632a] text-white shadow-sm flex-1 rounded-xl"
                     >
                       عرض الطلب
                     </Button>
-                  </div>
 
-                  <Dialog open={selectedOrder?.id === order.id} onOpenChange={(open) => {
-                    if (!open) setSelectedOrder(null);
-                  }}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedOrder(order);
-                          setOrderUpdateForm({
-                            status: order.status,
-                            progress: order.progress || 0,
-                            estimatedPrice: order.estimatedPrice || 0,
-                            adminNotes: order.adminNotes || "",
-                          });
-                        }}
-                      >
-                        <Edit2 className="w-4 h-4 mr-2" />
-                        تحديث الحالة
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>تحديث حالة الطلب</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium">الحالة</label>
-                          <Select
-                            value={orderUpdateForm.status}
-                            onValueChange={(value: any) =>
-                              setOrderUpdateForm({
-                                ...orderUpdateForm,
-                                status: value,
-                              })
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="new">جديد</SelectItem>
-                              <SelectItem value="pending_approval">
-                                في انتظار الموافقة
-                              </SelectItem>
-                              <SelectItem value="approved">
-                                موافق عليه
-                              </SelectItem>
-                              <SelectItem value="in_progress">
-                                قيد التنفيذ
-                              </SelectItem>
-                              <SelectItem value="completed">مكتمل</SelectItem>
-                              <SelectItem value="delayed">مؤجل</SelectItem>
-                              <SelectItem value="cancelled">ملغى</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium">
-                            نسبة التقدم (%)
-                          </label>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={orderUpdateForm.progress}
-                            onChange={(e) =>
-                              setOrderUpdateForm({
-                                ...orderUpdateForm,
-                                progress: parseInt(e.target.value) || 0,
-                              })
-                            }
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium">
-                            السعر المتوقع (دج)
-                          </label>
-                          <Input
-                            type="number"
-                            value={orderUpdateForm.estimatedPrice}
-                            onChange={(e) =>
-                              setOrderUpdateForm({
-                                ...orderUpdateForm,
-                                estimatedPrice: parseInt(e.target.value) || 0,
-                              })
-                            }
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-sm font-medium">
-                            ملاحظات إدارية
-                          </label>
-                          <Textarea
-                            value={orderUpdateForm.adminNotes}
-                            onChange={(e) =>
-                              setOrderUpdateForm({
-                                ...orderUpdateForm,
-                                adminNotes: e.target.value,
-                              })
-                            }
-                            placeholder="أضف ملاحظات إدارية..."
-                          />
-                        </div>
-
+                    <Dialog open={selectedOrder?.id === order.id} onOpenChange={(open) => {
+                      if (!open) setSelectedOrder(null);
+                    }}>
+                      <DialogTrigger asChild>
                         <Button
+                          variant="outline"
+                          className="border-[#B87333] text-[#B87333] hover:bg-[#B87333]/10 flex-1 rounded-xl shadow-sm"
                           onClick={() => {
-                            updateOrderMutation.mutate({
-                              id: selectedOrder.id,
-                              status: orderUpdateForm.status,
-                              progress: orderUpdateForm.progress,
-                              estimatedPrice: orderUpdateForm.estimatedPrice,
-                              adminNotes: orderUpdateForm.adminNotes,
+                            setSelectedOrder(order);
+                            setOrderUpdateForm({
+                              status: order.status,
+                              progress: order.progress || 0,
+                              estimatedPrice: order.estimatedPrice || 0,
+                              adminNotes: order.adminNotes || "",
                             });
                           }}
-                          className="w-full"
                         >
-                          حفظ التغييرات
+                          <Edit2 className="w-4 h-4 mr-2" />
+                          تحديث الحالة
                         </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                      </DialogTrigger>
+                      <DialogContent className="rounded-2xl">
+                        <DialogHeader>
+                          <DialogTitle className="text-[#1a1a1a]">تحديث حالة الطلب</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-sm font-medium text-[#1a1a1a]">الحالة</label>
+                            <Select
+                              value={orderUpdateForm.status}
+                              onValueChange={(value: any) =>
+                                setOrderUpdateForm({
+                                  ...orderUpdateForm,
+                                  status: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger className="mt-1 rounded-xl">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="rounded-xl">
+                                <SelectItem value="new">جديد</SelectItem>
+                                <SelectItem value="pending_approval">في انتظار الموافقة</SelectItem>
+                                <SelectItem value="approved">موافق عليه</SelectItem>
+                                <SelectItem value="in_progress">قيد التنفيذ</SelectItem>
+                                <SelectItem value="completed">مكتمل</SelectItem>
+                                <SelectItem value="delayed">مؤجل</SelectItem>
+                                <SelectItem value="cancelled">ملغى</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium text-[#1a1a1a]">نسبة التقدم (%)</label>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              value={orderUpdateForm.progress}
+                              onChange={(e) =>
+                                setOrderUpdateForm({
+                                  ...orderUpdateForm,
+                                  progress: parseInt(e.target.value) || 0,
+                                })
+                              }
+                              className="mt-1 rounded-xl"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium text-[#1a1a1a]">السعر المتوقع (دج)</label>
+                            <Input
+                              type="number"
+                              value={orderUpdateForm.estimatedPrice}
+                              onChange={(e) =>
+                                setOrderUpdateForm({
+                                  ...orderUpdateForm,
+                                  estimatedPrice: parseInt(e.target.value) || 0,
+                                })
+                              }
+                              className="mt-1 rounded-xl"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-sm font-medium text-[#1a1a1a]">ملاحظات إدارية</label>
+                            <Textarea
+                              value={orderUpdateForm.adminNotes}
+                              onChange={(e) =>
+                                setOrderUpdateForm({
+                                  ...orderUpdateForm,
+                                  adminNotes: e.target.value,
+                                })
+                              }
+                              placeholder="أضف ملاحظات إدارية..."
+                              className="mt-1 rounded-xl"
+                            />
+                          </div>
+
+                          <Button
+                            onClick={() => {
+                              updateOrderMutation.mutate({
+                                id: selectedOrder.id,
+                                status: orderUpdateForm.status,
+                                progress: orderUpdateForm.progress,
+                                estimatedPrice: orderUpdateForm.estimatedPrice,
+                                adminNotes: orderUpdateForm.adminNotes,
+                              });
+                            }}
+                            className="w-full bg-[#B87333] hover:bg-[#a0632a] text-white rounded-xl"
+                          >
+                            حفظ التغييرات
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </Card>
               ))}
+
+              {ordersQuery.data?.length === 0 && (
+                <div className="text-center py-16 text-[#8B8680]">
+                  <ShoppingBag className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>لا توجد طلبات بعد</p>
+                </div>
+              )}
             </div>
           </TabsContent>
 
           {/* Portfolio Tab */}
-          <TabsContent value="portfolio" className="space-y-4">
+          <TabsContent value="portfolio" className="space-y-4 mt-4">
             <Dialog>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="bg-[#B87333] hover:bg-[#a0632a] text-white rounded-xl shadow-sm">
                   <Plus className="w-4 h-4 mr-2" />
                   إضافة عمل جديد
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="rounded-2xl">
                 <DialogHeader>
                   <DialogTitle>إضافة عمل جديد</DialogTitle>
                 </DialogHeader>
@@ -556,43 +617,37 @@ export default function AdminDashboard() {
                     placeholder="العنوان"
                     value={portfolioForm.title}
                     onChange={(e) =>
-                      setPortfolioForm({
-                        ...portfolioForm,
-                        title: e.target.value,
-                      })
+                      setPortfolioForm({ ...portfolioForm, title: e.target.value })
                     }
+                    className="rounded-xl"
                   />
                   <Textarea
                     placeholder="الوصف"
                     value={portfolioForm.description}
                     onChange={(e) =>
-                      setPortfolioForm({
-                        ...portfolioForm,
-                        description: e.target.value,
-                      })
+                      setPortfolioForm({ ...portfolioForm, description: e.target.value })
                     }
+                    className="rounded-xl"
                   />
                   <Input
                     type="file"
                     accept="image/*"
                     onChange={handlePortfolioImageChange}
+                    className="rounded-xl"
                   />
                   {portfolioImagePreview && (
-                    <img src={portfolioImagePreview} alt="معاينة" className="w-full h-40 object-cover rounded" />
+                    <img src={portfolioImagePreview} alt="معاينة" className="w-full h-40 object-cover rounded-xl" />
                   )}
                   <Select
                     value={portfolioForm.categoryId.toString()}
                     onValueChange={(value) =>
-                      setPortfolioForm({
-                        ...portfolioForm,
-                        categoryId: parseInt(value),
-                      })
+                      setPortfolioForm({ ...portfolioForm, categoryId: parseInt(value) })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="rounded-xl">
                       <SelectValue placeholder="اختر فئة" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-xl">
                       {categoriesQuery.data?.map((category) => (
                         <SelectItem key={category.id} value={category.id.toString()}>
                           {category.name}
@@ -605,11 +660,9 @@ export default function AdminDashboard() {
                     placeholder="السعر (دج)"
                     value={portfolioForm.price}
                     onChange={(e) =>
-                      setPortfolioForm({
-                        ...portfolioForm,
-                        price: parseInt(e.target.value) || 0,
-                      })
+                      setPortfolioForm({ ...portfolioForm, price: parseInt(e.target.value) || 0 })
                     }
+                    className="rounded-xl"
                   />
                   <Button
                     onClick={() => {
@@ -625,7 +678,7 @@ export default function AdminDashboard() {
                         price: portfolioForm.price,
                       });
                     }}
-                    className="w-full"
+                    className="w-full bg-[#B87333] hover:bg-[#a0632a] text-white rounded-xl"
                   >
                     إضافة
                   </Button>
@@ -635,20 +688,18 @@ export default function AdminDashboard() {
 
             <div className="grid gap-4">
               {portfolioQuery.data?.map((work: any) => (
-                <Card key={work.id} className="p-6">
+                <Card key={work.id} className="p-5 rounded-2xl shadow-sm border border-[#E8E4DB] bg-white hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg">{work.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {work.description}
-                      </p>
+                      <h3 className="font-bold text-lg text-[#1a1a1a]">{work.title}</h3>
+                      <p className="text-sm text-[#8B8680] mt-1">{work.description}</p>
                       <div className="flex gap-4 mt-3 text-sm">
-                        <span className="text-gray-600">
-                          الفئة: <strong>{work.category}</strong>
+                        <span className="bg-[#f5f0e8] text-[#8B5A2B] px-2 py-1 rounded-lg text-xs font-medium">
+                          الفئة: {work.category}
                         </span>
                         {work.price && (
-                          <span className="text-gray-600">
-                            السعر: <strong>{work.price} دج</strong>
+                          <span className="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg text-xs font-medium">
+                            {work.price} دج
                           </span>
                         )}
                       </div>
@@ -657,9 +708,8 @@ export default function AdminDashboard() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() =>
-                          deletePortfolioMutation.mutate({ id: work.id })
-                        }
+                        onClick={() => deletePortfolioMutation.mutate({ id: work.id })}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -671,15 +721,15 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Services Tab */}
-          <TabsContent value="services" className="space-y-4">
+          <TabsContent value="services" className="space-y-4 mt-4">
             <Dialog>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="bg-[#B87333] hover:bg-[#a0632a] text-white rounded-xl shadow-sm">
                   <Plus className="w-4 h-4 mr-2" />
                   إضافة خدمة جديدة
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="rounded-2xl">
                 <DialogHeader>
                   <DialogTitle>إضافة خدمة جديدة</DialogTitle>
                 </DialogHeader>
@@ -687,33 +737,23 @@ export default function AdminDashboard() {
                   <Input
                     placeholder="اسم الخدمة"
                     value={serviceForm.name}
-                    onChange={(e) =>
-                      setServiceForm({
-                        ...serviceForm,
-                        name: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setServiceForm({ ...serviceForm, name: e.target.value })}
+                    className="rounded-xl"
                   />
                   <Textarea
                     placeholder="وصف الخدمة"
                     value={serviceForm.description}
-                    onChange={(e) =>
-                      setServiceForm({
-                        ...serviceForm,
-                        description: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setServiceForm({ ...serviceForm, description: e.target.value })}
+                    className="rounded-xl"
                   />
                   <Input
                     type="number"
                     placeholder="السعر الأساسي (دج)"
                     value={serviceForm.basePrice}
                     onChange={(e) =>
-                      setServiceForm({
-                        ...serviceForm,
-                        basePrice: parseInt(e.target.value) || 0,
-                      })
+                      setServiceForm({ ...serviceForm, basePrice: parseInt(e.target.value) || 0 })
                     }
+                    className="rounded-xl"
                   />
                   <Button
                     onClick={() => {
@@ -723,7 +763,7 @@ export default function AdminDashboard() {
                         basePrice: serviceForm.basePrice,
                       });
                     }}
-                    className="w-full"
+                    className="w-full bg-[#B87333] hover:bg-[#a0632a] text-white rounded-xl"
                   >
                     إضافة
                   </Button>
@@ -733,34 +773,35 @@ export default function AdminDashboard() {
 
             <div className="grid gap-4">
               {servicesQuery.data?.map((service: any) => (
-                <Card key={service.id} className="p-6">
+                <Card key={service.id} className="p-5 rounded-2xl shadow-sm border border-[#E8E4DB] bg-white hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-lg">{service.name}</h3>
+                        <h3 className="font-bold text-lg text-[#1a1a1a]">{service.name}</h3>
                         <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
+                          className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                             service.isActive === 1
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
+                              ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                              : "bg-red-100 text-red-700 border border-red-200"
                           }`}
                         >
-                          {service.isActive === 1 ? "مفعل" : "معطل"}
+                          {service.isActive === 1 ? "مفعّل" : "معطّل"}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {service.description}
-                      </p>
-                      <p className="text-sm font-medium mt-2">
-                        السعر الأساسي: {service.basePrice} دج
+                      <p className="text-sm text-[#8B8680] mt-1">{service.description}</p>
+                      <p className="text-sm font-semibold text-[#B87333] mt-2">
+                        {service.basePrice} دج
                       </p>
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() =>
-                        toggleServiceMutation.mutate({ id: service.id })
-                      }
+                      onClick={() => toggleServiceMutation.mutate({ id: service.id })}
+                      className={`rounded-xl border ${
+                        service.isActive === 1
+                          ? "border-red-200 text-red-600 hover:bg-red-50"
+                          : "border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                      }`}
                     >
                       {service.isActive === 1 ? "تعطيل" : "تفعيل"}
                     </Button>
@@ -771,15 +812,15 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Categories Tab */}
-          <TabsContent value="categories" className="space-y-4">
+          <TabsContent value="categories" className="space-y-4 mt-4">
             <Dialog>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="bg-[#B87333] hover:bg-[#a0632a] text-white rounded-xl shadow-sm">
                   <Plus className="w-4 h-4 mr-2" />
                   إضافة فئة جديدة
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="rounded-2xl">
                 <DialogHeader>
                   <DialogTitle>إضافة فئة جديدة</DialogTitle>
                 </DialogHeader>
@@ -787,22 +828,14 @@ export default function AdminDashboard() {
                   <Input
                     placeholder="اسم الفئة"
                     value={categoryForm.name}
-                    onChange={(e) =>
-                      setCategoryForm({
-                        ...categoryForm,
-                        name: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                    className="rounded-xl"
                   />
                   <Textarea
                     placeholder="وصف الفئة (اختياري)"
                     value={categoryForm.description}
-                    onChange={(e) =>
-                      setCategoryForm({
-                        ...categoryForm,
-                        description: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                    className="rounded-xl"
                   />
                   <Button
                     onClick={() => {
@@ -815,7 +848,7 @@ export default function AdminDashboard() {
                         description: categoryForm.description,
                       });
                     }}
-                    className="w-full"
+                    className="w-full bg-[#B87333] hover:bg-[#a0632a] text-white rounded-xl"
                   >
                     إضافة
                   </Button>
@@ -825,14 +858,12 @@ export default function AdminDashboard() {
 
             <div className="grid gap-4">
               {categoriesQuery.data?.map((category: any) => (
-                <Card key={category.id} className="p-6">
+                <Card key={category.id} className="p-5 rounded-2xl shadow-sm border border-[#E8E4DB] bg-white hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-bold text-lg">{category.name}</h3>
+                      <h3 className="font-bold text-lg text-[#1a1a1a]">{category.name}</h3>
                       {category.description && (
-                        <p className="text-sm text-gray-600 mt-1">
-                          {category.description}
-                        </p>
+                        <p className="text-sm text-[#8B8680] mt-1">{category.description}</p>
                       )}
                     </div>
                     <div className="flex gap-2">
@@ -850,11 +881,12 @@ export default function AdminDashboard() {
                                 description: category.description || "",
                               });
                             }}
+                            className="text-[#B87333] hover:text-[#a0632a] hover:bg-[#B87333]/10 rounded-xl"
                           >
                             <Edit2 className="w-4 h-4" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="rounded-2xl">
                           <DialogHeader>
                             <DialogTitle>تعديل الفئة</DialogTitle>
                           </DialogHeader>
@@ -863,21 +895,17 @@ export default function AdminDashboard() {
                               placeholder="اسم الفئة"
                               value={editingCategoryForm.name}
                               onChange={(e) =>
-                                setEditingCategoryForm({
-                                  ...editingCategoryForm,
-                                  name: e.target.value,
-                                })
+                                setEditingCategoryForm({ ...editingCategoryForm, name: e.target.value })
                               }
+                              className="rounded-xl"
                             />
                             <Textarea
                               placeholder="وصف الفئة (اختياري)"
                               value={editingCategoryForm.description}
                               onChange={(e) =>
-                                setEditingCategoryForm({
-                                  ...editingCategoryForm,
-                                  description: e.target.value,
-                                })
+                                setEditingCategoryForm({ ...editingCategoryForm, description: e.target.value })
                               }
+                              className="rounded-xl"
                             />
                             <Button
                               onClick={() => {
@@ -891,7 +919,7 @@ export default function AdminDashboard() {
                                   description: editingCategoryForm.description,
                                 });
                               }}
-                              className="w-full"
+                              className="w-full bg-[#B87333] hover:bg-[#a0632a] text-white rounded-xl"
                             >
                               حفظ التغييرات
                             </Button>
@@ -901,9 +929,8 @@ export default function AdminDashboard() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() =>
-                          deleteCategoryMutation.mutate({ id: category.id })
-                        }
+                        onClick={() => deleteCategoryMutation.mutate({ id: category.id })}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -915,94 +942,70 @@ export default function AdminDashboard() {
           </TabsContent>
 
           {/* Settings Tab */}
-          <TabsContent value="settings" className="space-y-4">
+          <TabsContent value="settings" className="space-y-4 mt-4">
             {isLoadingSettings ? (
               <div className="text-center py-12">
-                <p className="text-gray-600">جاري تحميل الإعدادات...</p>
+                <p className="text-[#8B8680]">جاري تحميل الإعدادات...</p>
               </div>
             ) : (
-              <Card className="p-6 space-y-6">
+              <Card className="p-6 rounded-2xl shadow-sm border border-[#E8E4DB] bg-white space-y-5">
                 <div>
-                  <label className="text-sm font-medium block mb-2">رقم الهاتف</label>
+                  <label className="text-sm font-semibold text-[#1a1a1a] block mb-2">رقم الهاتف</label>
                   <Input
                     placeholder="رقم الهاتف"
                     value={settingsForm.phone}
-                    onChange={(e) =>
-                      setSettingsForm({
-                        ...settingsForm,
-                        phone: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setSettingsForm({ ...settingsForm, phone: e.target.value })}
+                    className="rounded-xl"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium block mb-2">العنوان</label>
+                  <label className="text-sm font-semibold text-[#1a1a1a] block mb-2">العنوان</label>
                   <Textarea
                     placeholder="العنوان الكامل"
                     value={settingsForm.address}
-                    onChange={(e) =>
-                      setSettingsForm({
-                        ...settingsForm,
-                        address: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setSettingsForm({ ...settingsForm, address: e.target.value })}
+                    className="rounded-xl"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium block mb-2">رابط Facebook</label>
+                  <label className="text-sm font-semibold text-[#1a1a1a] block mb-2">رابط Facebook</label>
                   <Input
                     placeholder="https://facebook.com/..."
                     value={settingsForm.facebook}
-                    onChange={(e) =>
-                      setSettingsForm({
-                        ...settingsForm,
-                        facebook: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setSettingsForm({ ...settingsForm, facebook: e.target.value })}
+                    className="rounded-xl"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium block mb-2">رابط Instagram</label>
+                  <label className="text-sm font-semibold text-[#1a1a1a] block mb-2">رابط Instagram</label>
                   <Input
                     placeholder="https://instagram.com/..."
                     value={settingsForm.instagram}
-                    onChange={(e) =>
-                      setSettingsForm({
-                        ...settingsForm,
-                        instagram: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setSettingsForm({ ...settingsForm, instagram: e.target.value })}
+                    className="rounded-xl"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium block mb-2">رابط WhatsApp</label>
+                  <label className="text-sm font-semibold text-[#1a1a1a] block mb-2">رابط WhatsApp</label>
                   <Input
                     placeholder="رقم الهاتف للواتساب"
                     value={settingsForm.whatsapp}
-                    onChange={(e) =>
-                      setSettingsForm({
-                        ...settingsForm,
-                        whatsapp: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setSettingsForm({ ...settingsForm, whatsapp: e.target.value })}
+                    className="rounded-xl"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium block mb-2">رابط اللوغو</label>
+                  <label className="text-sm font-semibold text-[#1a1a1a] block mb-2">رابط اللوغو</label>
                   <Input
                     placeholder="رابط صورة اللوغو"
                     value={settingsForm.logo}
-                    onChange={(e) =>
-                      setSettingsForm({
-                        ...settingsForm,
-                        logo: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setSettingsForm({ ...settingsForm, logo: e.target.value })}
+                    className="rounded-xl"
                   />
                 </div>
 
@@ -1010,14 +1013,11 @@ export default function AdminDashboard() {
                   onClick={() => {
                     Object.entries(settingsForm).forEach(([key, value]) => {
                       if (value.trim()) {
-                        updateSettingMutation.mutate({
-                          key,
-                          value,
-                        });
+                        updateSettingMutation.mutate({ key, value });
                       }
                     });
                   }}
-                  className="w-full"
+                  className="w-full bg-[#B87333] hover:bg-[#a0632a] text-white rounded-xl shadow-sm"
                 >
                   حفظ الإعدادات
                 </Button>
