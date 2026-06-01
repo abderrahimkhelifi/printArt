@@ -32,6 +32,7 @@ export const appRouter = router({
         deadline: z.date().optional(),
         fileUrl: z.string().optional(),
         fileName: z.string().optional(),
+        attachments: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         const order = await db.createOrder({
@@ -43,6 +44,7 @@ export const appRouter = router({
           deadline: input.deadline,
           fileUrl: input.fileUrl,
           fileName: input.fileName,
+          attachments: input.attachments,
           status: "new",
         });
 

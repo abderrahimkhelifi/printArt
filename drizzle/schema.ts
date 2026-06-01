@@ -34,6 +34,7 @@ export const orders = pgTable("orders", {
   notes: text("notes"),
   adminNotes: text("adminNotes"),
   isRead: smallint("isRead").default(0).notNull(),
+  attachments: text("attachments"),
   completedAt: timestamp("completedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),

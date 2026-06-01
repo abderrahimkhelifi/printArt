@@ -2,8 +2,13 @@ import { useEffect, useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, ArrowRight } from "lucide-react";
+import { Download, ArrowRight, FileText, Image } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+
+interface Attachment {
+  fileUrl: string;
+  fileName: string;
+}
 
 export default function ViewOrder() {
   const [, navigate] = useLocation();
@@ -12,20 +17,16 @@ export default function ViewOrder() {
   const orderId = params?.id;
   const utils = trpc.useUtils();
 
-  // استخدام trpc للحصول على بيانات الطلب
   const getOrderQuery = trpc.orders.getById.useQuery(
     { id: parseInt(orderId || "0") },
     { enabled: !!orderId }
   );
 
-  // استخدام trpc لتحديث isRead
   const markAsReadMutation = trpc.orders.markAsRead.useMutation({
     onSuccess: () => {
-      // تحديث بيانات الطلب المحلية
       if (getOrderQuery.data) {
         setOrder({ ...getOrderQuery.data, isRead: 1 });
       }
-      // تحديث بيانات الطلبات في AdminDashboard (لإزالة الجرس)
       utils.orders.list.invalidate();
     },
   });
@@ -33,11 +34,8 @@ export default function ViewOrder() {
   useEffect(() => {
     if (getOrderQuery.data) {
       setOrder(getOrderQuery.data);
-      // تحديث isRead عند فتح الطلب إذا لم يكن مقروءاً
       if (!getOrderQuery.data.isRead) {
-        markAsReadMutation.mutate({
-          id: getOrderQuery.data.id,
-        });
+        markAsReadMutation.mutate({ id: getOrderQuery.data.id });
       }
     }
   }, [getOrderQuery.data?.id]);
@@ -53,6 +51,35 @@ export default function ViewOrder() {
     if (["pdf"].includes(ext)) return "📄";
     if (["doc", "docx"].includes(ext)) return "📝";
     return "📎";
+  };
+
+  const getAttachments = (order: any): Attachment[] => {
+    if (!order) return [];
+    const list: Attachment[] = [];
+
+    // Parse attachments JSON field (all files)
+    if (order.attachments) {
+      try {
+        const parsed = JSON.parse(order.attachments);
+        if (Array.isArray(parsed)) {
+          list.push(...parsed);
+          return list;
+        }
+      } catch {}
+    }
+
+    // Fall back to legacy single-file fields
+    if (order.fileUrl && order.fileName) {
+      list.push({ fileUrl: order.fileUrl, fileName: order.fileName });
+    }
+
+    return list;
+  };
+
+  const getDownloadUrl = (att: Attachment) => {
+    // Extract stored filename from URL (e.g. /uploads/1234567-file.jpg -> 1234567-file.jpg)
+    const storedName = att.fileUrl.split("/").pop() || att.fileName;
+    return `/api/download/${encodeURIComponent(storedName)}`;
   };
 
   if (getOrderQuery.isLoading) {
@@ -76,6 +103,8 @@ export default function ViewOrder() {
       </div>
     );
   }
+
+  const attachments = getAttachments(order);
 
   return (
     <div className="min-h-screen bg-[#f5f0e8] p-6">
@@ -135,55 +164,63 @@ export default function ViewOrder() {
             </div>
           )}
 
-          {order.fileUrl && order.fileName && (
+          {/* Attachments section */}
+          {attachments.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-xl font-bold mb-4">الملف المرفق</h2>
-              <div className="border rounded-lg p-4">
-                {getFileType(order.fileName) === "image" ? (
-                  <>
-                    <img
-                      src={order.fileUrl}
-                      alt={order.fileName}
-                      className="w-full h-64 object-cover rounded mb-4"
-                      onError={(e) => {
-                        console.error('Image failed to load:', order.fileUrl);
-                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22sans-serif%22 font-size=%2220%22 fill=%22%23999%22%3Eصورة غير متاحة%3C/text%3E%3C/svg%3E';
-                      }}
-                    />
-                    <p className="text-sm font-medium mb-2 text-right">{order.fileName}</p>
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="w-full flex items-center justify-center gap-2"
-                    >
-                      <a
-                        href={`/api/download/${encodeURIComponent(order.fileName)}`}
-                        download={order.fileName}
-                      >
-                        <Download className="w-4 h-4" />
-                        تحميل الصورة
-                      </a>
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-4xl mb-4 text-center">{getFileIcon(order.fileName)}</div>
-                    <p className="text-sm font-medium mb-2 text-right">{order.fileName}</p>
-                    <Button
-                      asChild
-                      variant="outline"
-                      className="w-full flex items-center justify-center gap-2"
-                    >
-                      <a
-                        href={`/api/download/${encodeURIComponent(order.fileName)}`}
-                        download={order.fileName}
-                      >
-                        <Download className="w-4 h-4" />
-                        تحميل الملف
-                      </a>
-                    </Button>
-                  </>
-                )}
+              <h2 className="text-xl font-bold mb-4">
+                الملفات المرفقة ({attachments.length})
+              </h2>
+              <div className="space-y-4">
+                {attachments.map((att, index) => {
+                  const isImage = getFileType(att.fileName) === "image";
+                  return (
+                    <div key={index} className="border rounded-lg p-4 bg-white">
+                      {isImage ? (
+                        <>
+                          <img
+                            src={att.fileUrl}
+                            alt={att.fileName}
+                            className="w-full h-64 object-cover rounded mb-3"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src =
+                                'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-family=%22sans-serif%22 font-size=%2220%22 fill=%22%23999%22%3Eصورة غير متاحة%3C/text%3E%3C/svg%3E';
+                            }}
+                          />
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Image className="w-4 h-4 text-[#B87333]" />
+                              <p className="text-sm font-medium">{att.fileName}</p>
+                            </div>
+                            <Button asChild variant="outline" size="sm">
+                              <a href={getDownloadUrl(att)} download={att.fileName}>
+                                <Download className="w-4 h-4 mr-1" />
+                                تحميل
+                              </a>
+                            </Button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="text-3xl">{getFileIcon(att.fileName)}</span>
+                            <div>
+                              <p className="text-sm font-medium">{att.fileName}</p>
+                              <p className="text-xs text-gray-500">
+                                {att.fileName.split(".").pop()?.toUpperCase()} ملف
+                              </p>
+                            </div>
+                          </div>
+                          <Button asChild variant="outline" size="sm">
+                            <a href={getDownloadUrl(att)} download={att.fileName}>
+                              <Download className="w-4 h-4 mr-1" />
+                              تحميل
+                            </a>
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

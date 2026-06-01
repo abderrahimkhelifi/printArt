@@ -150,7 +150,7 @@ export default function OrderForm() {
         }
       }
 
-      // Create order in database with first file (for backward compatibility)
+      // Create order in database with all uploaded files
       const firstFile = uploadedFileUrls[0];
       await createOrderMutation.mutateAsync({
         clientName: formData.name,
@@ -161,6 +161,7 @@ export default function OrderForm() {
         deadline: formData.deadline ? new Date(formData.deadline) : undefined,
         fileUrl: firstFile?.fileUrl,
         fileName: firstFile?.fileName,
+        attachments: uploadedFileUrls.length > 0 ? JSON.stringify(uploadedFileUrls) : undefined,
       });
 
       // Send via email or WhatsApp
