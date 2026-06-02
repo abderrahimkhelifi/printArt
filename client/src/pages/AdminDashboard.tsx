@@ -71,7 +71,10 @@ export default function AdminDashboard() {
     instagram: "",
     whatsapp: "",
     logo: "",
+    footer_logo: "",
   });
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [footerLogoUploading, setFooterLogoUploading] = useState(false);
 
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
   const [editingCategoryForm, setEditingCategoryForm] = useState({
@@ -233,6 +236,7 @@ export default function AdminDashboard() {
         instagram: "",
         whatsapp: "",
         logo: "",
+        footer_logo: "",
       };
       settingsQuery.data.forEach((setting) => {
         newSettings[setting.key] = setting.value;
@@ -1067,14 +1071,122 @@ export default function AdminDashboard() {
                   />
                 </div>
 
+                {/* Navbar Logo Upload */}
                 <div>
-                  <label className="text-sm font-semibold text-[#1a1a1a] block mb-2">رابط اللوغو</label>
-                  <Input
-                    placeholder="رابط صورة اللوغو"
-                    value={settingsForm.logo}
-                    onChange={(e) => setSettingsForm({ ...settingsForm, logo: e.target.value })}
-                    className="rounded-xl"
-                  />
+                  <label className="text-sm font-semibold text-[#1a1a1a] block mb-2">شعار شريط التنقل (Navbar)</label>
+                  <div className="space-y-3">
+                    {settingsForm.logo && (
+                      <div className="flex items-center gap-3 p-3 bg-[#faf8f5] rounded-xl border border-[#E8E4DB]">
+                        <img src={settingsForm.logo} alt="Navbar Logo" className="h-8 max-w-[130px] object-contain rounded" />
+                        <span className="text-xs text-[#8B8680] flex-1 truncate">{settingsForm.logo.split("/").pop()}</span>
+                        <button
+                          onClick={() => setSettingsForm({ ...settingsForm, logo: "" })}
+                          className="text-red-400 hover:text-red-600 text-xs font-medium"
+                        >
+                          حذف
+                        </button>
+                      </div>
+                    )}
+                    <label className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed cursor-pointer transition-all ${logoUploading ? "border-[#B87333] bg-[#B87333]/5" : "border-[#E8E4DB] hover:border-[#B87333] hover:bg-[#faf8f5]"}`}>
+                      {logoUploading ? (
+                        <span className="text-sm text-[#B87333]">جاري الرفع...</span>
+                      ) : (
+                        <>
+                          <span className="text-2xl">🖼️</span>
+                          <span className="text-sm text-[#8B8680]">
+                            {settingsForm.logo ? "تغيير الشعار" : "رفع شعار الـ Navbar"} — PNG أو SVG أو JPG
+                          </span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={logoUploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setLogoUploading(true);
+                          try {
+                            const fd = new FormData();
+                            fd.append("file", file);
+                            const res = await fetch("/api/upload", {
+                              method: "POST",
+                              headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+                              body: fd,
+                            });
+                            const data = await res.json();
+                            if (data.fileUrl) {
+                              setSettingsForm((prev) => ({ ...prev, logo: data.fileUrl }));
+                              updateSettingMutation.mutate({ key: "logo", value: data.fileUrl });
+                            }
+                          } finally {
+                            setLogoUploading(false);
+                            e.target.value = "";
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Footer Logo Upload */}
+                <div>
+                  <label className="text-sm font-semibold text-[#1a1a1a] block mb-2">شعار التذييل (Footer)</label>
+                  <div className="space-y-3">
+                    {settingsForm.footer_logo && (
+                      <div className="flex items-center gap-3 p-3 bg-[#1a1a1a] rounded-xl border border-gray-700">
+                        <img src={settingsForm.footer_logo} alt="Footer Logo" className="h-10 max-w-[180px] object-contain rounded" />
+                        <span className="text-xs text-gray-400 flex-1 truncate">{settingsForm.footer_logo.split("/").pop()}</span>
+                        <button
+                          onClick={() => setSettingsForm({ ...settingsForm, footer_logo: "" })}
+                          className="text-red-400 hover:text-red-500 text-xs font-medium"
+                        >
+                          حذف
+                        </button>
+                      </div>
+                    )}
+                    <label className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed cursor-pointer transition-all ${footerLogoUploading ? "border-[#B87333] bg-[#B87333]/5" : "border-[#E8E4DB] hover:border-[#B87333] hover:bg-[#faf8f5]"}`}>
+                      {footerLogoUploading ? (
+                        <span className="text-sm text-[#B87333]">جاري الرفع...</span>
+                      ) : (
+                        <>
+                          <span className="text-2xl">🖼️</span>
+                          <span className="text-sm text-[#8B8680]">
+                            {settingsForm.footer_logo ? "تغيير شعار الـ Footer" : "رفع شعار الـ Footer"} — PNG أو SVG أو JPG
+                          </span>
+                        </>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={footerLogoUploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setFooterLogoUploading(true);
+                          try {
+                            const fd = new FormData();
+                            fd.append("file", file);
+                            const res = await fetch("/api/upload", {
+                              method: "POST",
+                              headers: { Authorization: `Bearer ${localStorage.getItem("adminToken")}` },
+                              body: fd,
+                            });
+                            const data = await res.json();
+                            if (data.fileUrl) {
+                              setSettingsForm((prev) => ({ ...prev, footer_logo: data.fileUrl }));
+                              updateSettingMutation.mutate({ key: "footer_logo", value: data.fileUrl });
+                            }
+                          } finally {
+                            setFooterLogoUploading(false);
+                            e.target.value = "";
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
                 </div>
 
                 <Button
