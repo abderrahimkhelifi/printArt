@@ -84,9 +84,6 @@ export default function AdminLoginPage() {
                 <Printer className="w-10 h-10 text-white" />
               </div>
             )}
-            <h1 className="text-3xl font-extrabold text-[#1a1a1a] tracking-tight">
-              Print<span className="text-[#B87333]">Art</span>
-            </h1>
             <p className="text-[#8B8680] text-sm mt-1">لوحة التحكم — المسؤولون فقط</p>
           </div>
 
