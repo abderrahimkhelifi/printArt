@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Lock, Mail, Loader2, Printer } from "lucide-react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
 export default function AdminLoginPage() {
   const [, navigate] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const settingsQuery = trpc.settings.list.useQuery();
+  const logoUrl = useMemo(() => {
+    return settingsQuery.data?.find(s => s.key === "logo")?.value || null;
+  }, [settingsQuery.data]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,12 +70,20 @@ export default function AdminLoginPage() {
 
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center mb-4 shadow-lg"
-              style={{ background: "linear-gradient(135deg, #B87333, #8B5A2B)" }}
-            >
-              <Printer className="w-10 h-10 text-white" />
-            </div>
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="PrintArt"
+                className="h-16 max-w-[180px] object-contain mb-4"
+              />
+            ) : (
+              <div
+                className="w-20 h-20 rounded-2xl flex items-center justify-center mb-4 shadow-lg"
+                style={{ background: "linear-gradient(135deg, #B87333, #8B5A2B)" }}
+              >
+                <Printer className="w-10 h-10 text-white" />
+              </div>
+            )}
             <h1 className="text-3xl font-extrabold text-[#1a1a1a] tracking-tight">
               Print<span className="text-[#B87333]">Art</span>
             </h1>
