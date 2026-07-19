@@ -2,6 +2,28 @@ import * as fs from "fs";
 import * as path from "path";
 import * as db from "./db";
 
+const uploadsDir = path.join(process.cwd(), "uploads");
+
+function deleteFileIfExists(fileUrl: string) {
+  const filename = fileUrl.split("/").pop();
+  if (!filename) return;
+  const filePath = path.join(uploadsDir, filename);
+
+  if (!filePath.startsWith(uploadsDir)) {
+    console.warn(`[Cleanup] Unsafe file path skipped: ${filePath}`);
+    return;
+  }
+
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`[Cleanup] Deleted: ${filename}`);
+    }
+  } catch (error) {
+    console.error(`[Cleanup] Failed to delete ${filename}:`, error);
+  }
+}
+
 /**
  * حذف الملفات المرفقة بالطلبات المكتملة أو الملغاة بعد 30 يوماً
  */
@@ -9,7 +31,6 @@ export async function cleanupOldOrderFiles() {
   try {
     console.log("[Cleanup] Starting cleanup of old order files...");
 
-    // الحصول على جميع الطلبات
     const orders = await db.getOrders();
 
     if (!orders || orders.length === 0) {
@@ -23,45 +44,43 @@ export async function cleanupOldOrderFiles() {
     let deletedCount = 0;
 
     for (const order of orders) {
-      // التحقق من أن الطلب مكتمل أو ملغى
       if (order.status !== "completed" && order.status !== "cancelled") {
         continue;
       }
 
-      // التحقق من أن الطلب تم إكماله قبل 30 يوم على الأقل
-      // استخدام completedAt إذا كان موجوداً، وإلا استخدام updatedAt
-      const completionTime = order.completedAt ? new Date(order.completedAt) : new Date(order.updatedAt || order.createdAt);
+      const completionTime = order.completedAt
+        ? new Date(order.completedAt)
+        : new Date((order as any).updatedAt || order.createdAt);
+
       if (completionTime > thirtyDaysAgo) {
         continue;
       }
 
-      // حذف الملف إذا كان موجوداً
+      // حذف fileUrl القديم
       if (order.fileUrl) {
-        const uploadsDir = path.join(process.cwd(), "uploads");
-        // استخراج اسم الملف من fileUrl (مثال: /uploads/filename.jpg -> filename.jpg)
-        const filename = order.fileUrl.split('/').pop();
-        if (!filename) continue;
-        const filePath = path.join(uploadsDir, filename);
+        deleteFileIfExists(order.fileUrl);
+        deletedCount++;
+      }
 
-        // التحقق من أن المسار آمن (لا يحتوي على ../)
-        if (!filePath.startsWith(uploadsDir)) {
-          console.warn(`[Cleanup] Unsafe file path: ${filePath}`);
-          continue;
-        }
-
+      // حذف جميع ملفات attachments
+      if ((order as any).attachments) {
         try {
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-            console.log(`[Cleanup] Deleted file: ${filename}`);
-            deletedCount++;
+          const attachments = JSON.parse((order as any).attachments);
+          if (Array.isArray(attachments)) {
+            for (const att of attachments) {
+              if (att.fileUrl) {
+                deleteFileIfExists(att.fileUrl);
+                deletedCount++;
+              }
+            }
           }
-        } catch (error) {
-          console.error(`[Cleanup] Failed to delete file ${filename}:`, error);
+        } catch {
+          console.warn(`[Cleanup] Could not parse attachments for order ${order.id}`);
         }
       }
     }
 
-    console.log(`[Cleanup] Cleanup completed. Deleted ${deletedCount} files.`);
+    console.log(`[Cleanup] Completed. Deleted ${deletedCount} files.`);
   } catch (error) {
     console.error("[Cleanup] Error during cleanup:", error);
   }
@@ -71,7 +90,6 @@ export async function cleanupOldOrderFiles() {
  * جدولة مهمة التنظيف لتعمل يومياً في الساعة 2 صباحاً
  */
 export function scheduleCleanup() {
-  // حساب الوقت حتى الساعة 2 صباحاً
   const now = new Date();
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -79,14 +97,12 @@ export function scheduleCleanup() {
 
   const delay = tomorrow.getTime() - now.getTime();
 
-  // تشغيل المهمة الأولى
   setTimeout(() => {
     cleanupOldOrderFiles();
 
-    // تشغيل المهمة يومياً بعد ذلك
     setInterval(() => {
       cleanupOldOrderFiles();
-    }, 24 * 60 * 60 * 1000); // كل 24 ساعة
+    }, 24 * 60 * 60 * 1000);
   }, delay);
 
   console.log(`[Cleanup] Scheduled cleanup to run daily at 2:00 AM`);

@@ -1,5 +1,5 @@
 import { eq, desc } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/node-postgres";
 import { InsertUser, users, orders, InsertOrder, portfolioWorks, InsertPortfolioWork, services, InsertService, notifications, InsertNotification, categories, InsertCategory, settings, InsertSetting } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -68,7 +68,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       updateSet.lastSignedIn = new Date();
     }
 
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
       set: updateSet,
     });
   } catch (error) {
@@ -127,7 +128,7 @@ export async function updateOrderStatus(id: number, status?: string, adminNotes?
   if (adminNotes !== undefined) updateData.adminNotes = adminNotes;
   if (progress !== undefined) updateData.progress = progress;
   if (estimatedPrice !== undefined) updateData.estimatedPrice = estimatedPrice;
-  if (isRead !== undefined) updateData.isRead = isRead;
+  if (isRead !== undefined) updateData.isRead = isRead ? 1 : 0;
   
   return await db.update(orders).set(updateData).where(eq(orders.id, id));
 }
@@ -191,7 +192,6 @@ export async function getServicesPaginated(page: number = 1, limit: number = 10,
   
   const offset = (page - 1) * limit;
   
-  // فلترة الخدمات النشطة فقط للصفحة العامة
   const query = db.select().from(services);
   if (!includeInactive) {
     query.where(eq(services.isActive, 1));

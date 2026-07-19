@@ -1,54 +1,11 @@
 {
   "version": "7",
-  "dialect": "mysql",
   "entries": [
     {
       "idx": 0,
-      "version": "5",
-      "when": 1777338217230,
-      "tag": "0000_premium_paper_doll",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1777338274236,
-      "tag": "0001_giant_silver_samurai",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1777339364778,
-      "tag": "0002_peaceful_morgan_stark",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1777418330050,
-      "tag": "0003_bent_scarlet_spider",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1777591526309,
-      "tag": "0004_brief_talisman",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1777763800150,
-      "tag": "0005_black_blue_shield",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1777965648113,
-      "tag": "0006_wealthy_rocket_raccoon",
+      "version": "7",
+      "when": 1780277250559,
+      "tag": "0000_sturdy_timeslip",
       "breakpoints": true
     }
   ]

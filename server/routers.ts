@@ -32,6 +32,7 @@ export const appRouter = router({
         deadline: z.date().optional(),
         fileUrl: z.string().optional(),
         fileName: z.string().optional(),
+        attachments: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         const order = await db.createOrder({
@@ -43,18 +44,17 @@ export const appRouter = router({
           deadline: input.deadline,
           fileUrl: input.fileUrl,
           fileName: input.fileName,
+          attachments: input.attachments,
           status: "new",
         });
 
         // Create notification for new order
-        if (order && typeof order === 'object' && 'insertId' in order) {
-          await db.createNotification({
-            type: "new_order",
-            title: "طلب جديد",
-            content: `تم استقبال طلب جديد من ${input.clientName} للخدمة: ${input.serviceType}`,
-            orderId: order.insertId as number,
-          });
-        }
+        await db.createNotification({
+          type: "new_order",
+          title: "طلب جديد",
+          content: `تم استقبال طلب جديد من ${input.clientName} للخدمة: ${input.serviceType}`,
+          orderId: undefined,
+        });
 
         return order;
       }),

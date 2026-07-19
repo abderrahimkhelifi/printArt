@@ -1,1 +1,0 @@
-ALTER TABLE `orders` ADD `isRead` tinyint DEFAULT 0 NOT NULL;
