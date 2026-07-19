@@ -37,6 +37,8 @@ export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedTab, setSelectedTab] = useState("orders");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   // Form states
   const [portfolioImage, setPortfolioImage] = useState<File | null>(null);
@@ -325,8 +327,40 @@ export default function AdminDashboard() {
 
           {/* Orders Tab */}
           <TabsContent value="orders" className="space-y-4">
-            <div className="grid gap-4">
-              {ordersQuery.data?.map((order: any) => (
+            <div className="space-y-4">
+              {/* البحث والفلترة */}
+              <div className="flex gap-4 mb-4 flex-col sm:flex-row">
+                <Input
+                  placeholder="ابحث عن اسم العميل أو البريد الإلكتروني..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1"
+                />
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="w-full sm:w-40">
+                    <SelectValue placeholder="فلتر الحالة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">جميع الحالات</SelectItem>
+                    <SelectItem value="new">جديد</SelectItem>
+                    <SelectItem value="in_progress">قيد التنفيذ</SelectItem>
+                    <SelectItem value="completed">مكتمل</SelectItem>
+                    <SelectItem value="cancelled">ملغى</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* جدول الطلبات */}
+              <div className="grid gap-4">
+                {ordersQuery.data
+                  ?.filter((order: any) => {
+                    const matchesSearch =
+                      order.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      order.clientEmail.toLowerCase().includes(searchTerm.toLowerCase());
+                    const matchesStatus = filterStatus === "all" || order.status === filterStatus;
+                    return matchesSearch && matchesStatus;
+                  })
+                  .map((order: any) => (
                 <Card key={order.id} className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -534,7 +568,8 @@ export default function AdminDashboard() {
                     </DialogContent>
                   </Dialog>
                 </Card>
-              ))}
+                ))}
+              </div>
             </div>
           </TabsContent>
 
